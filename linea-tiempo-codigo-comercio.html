@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Camino del Comercio · Línea de Tiempo</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:#f5edd8; --paper:#ede4cc; --paper-dark:#c8b98a;
+  --ink:#1c1208; --sepia:#8b6914; --rust:#c0392b;
+  --gold:#d4a017; --gold-l:#f0c84a;
+  --teal:#2a7d6f; --teal-l:#4db6a4;
+  --green:#2d6a2d; --green-l:#5ab55a;
+  --bg:#f0e6c8;
+  --purple:#6b4c9a; --purple-l:#9b7fd4;
+  --navy:#1a3a5c; --blue:#2d6aaf;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{
+  background:var(--bg);
+  font-family:'Lora',serif;
+  color:var(--ink);
+  display:flex;flex-direction:column;height:100vh;
+}
+/* Líneas de papel */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 31px,rgba(180,160,100,0.15) 31px,rgba(180,160,100,0.15) 32px);
+  pointer-events:none;z-index:9999;
+}
+
+/* ── HEADER ── */
+.header{
+  background:var(--ink);padding:.6rem 1.2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;border-bottom:3px solid var(--gold);z-index:20;
+}
+.brand{font-family:'Caveat',cursive;font-size:1.1rem;font-weight:700;color:var(--cream);}
+.brand span{color:var(--gold);}
+.era-indicator{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(245,237,216,.5);}
+.era-name{color:var(--gold-l);font-weight:500;}
+.discovered-badge{font-family:'Caveat',cursive;font-size:1rem;font-weight:700;color:var(--teal-l);background:rgba(42,125,111,.12);border:1px solid rgba(77,182,164,.3);padding:.2rem .8rem;border-radius:3px;white-space:nowrap;}
+
+/* ── MAIN LAYOUT ── */
+.main-wrap{flex:1;display:flex;overflow:hidden;position:relative;}
+
+/* ── TRACK (la línea del camino) ── */
+.track-panel{
+  width:100%;flex-shrink:0;
+  overflow:hidden;position:relative;
+  display:flex;flex-direction:column;
+}
+
+/* ── SCROLL ROAD ── */
+.road-scroll{
+  flex:1;overflow-x:auto;overflow-y:hidden;
+  padding:0 2rem;
+  scrollbar-width:thin;
+  scrollbar-color:var(--paper-dark) transparent;
+}
+.road-inner{
+  display:flex;align-items:center;
+  min-width:max-content;
+  height:100%;
+  padding:0 3rem;
+  position:relative;
+}
+
+/* Camino de tierra */
+.road-path{
+  position:absolute;
+  top:50%;transform:translateY(-50%);
+  left:0;right:0;height:32px;
+  background:linear-gradient(180deg,#c8a96a 0%,#b89050 40%,#a07838 60%,#c8a96a 100%);
+  border-radius:16px;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.2),0 3px 10px rgba(0,0,0,.15);
+  z-index:0;
+}
+/* Huellas en el camino */
+.road-path::before{
+  content:'';position:absolute;inset:4px;
+  background:repeating-linear-gradient(90deg,
+    transparent 0px, transparent 18px,
+    rgba(139,105,20,.15) 18px, rgba(139,105,20,.15) 22px
+  );
+  border-radius:12px;
+}
+
+/* ── NODO DEL CAMINO ── */
+.node-wrap{
+  position:relative;z-index:10;
+  margin:0 1.5rem;
+  display:flex;flex-direction:column;
+  align-items:center;
+  cursor:pointer;
+}
+.node-wrap:first-child{margin-left:0;}
+
+.node{
+  width:54px;height:54px;
+  border-radius:50%;
+  border:3px solid var(--paper-dark);
+  background:var(--paper);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  position:relative;
+  box-shadow:0 3px 12px rgba(0,0,0,.2);
+}
+.node-wrap.locked .node{
+  filter:grayscale(.8) brightness(.7);
+  cursor:not-allowed;
+}
+.node-wrap.unlocked .node{
+  border-color:var(--gold);
+  background:#fff9ee;
+  box-shadow:0 4px 16px rgba(212,160,23,.3);
+}
+.node-wrap.unlocked .node:hover{
+  transform:scale(1.18) translateY(-4px);
+  box-shadow:0 8px 24px rgba(212,160,23,.4);
+  border-color:var(--gold-l);
+}
+.node-wrap.active .node{
+  border-color:var(--rust);
+  background:var(--ink);
+  color:var(--gold-l);
+  box-shadow:0 6px 24px rgba(192,57,43,.4);
+  transform:scale(1.22) translateY(-5px);
+}
+.node-wrap.visited .node{
+  border-color:var(--teal);
+  background:rgba(42,125,111,.15);
+  box-shadow:0 3px 10px rgba(42,125,111,.25);
+}
+
+/* Marca de check en visitados */
+.node-check{
+  position:absolute;top:-4px;right:-4px;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--teal);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.65rem;color:#fff;
+  opacity:0;transform:scale(0);
+  transition:all .3s .1s;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+.node-wrap.visited .node-check{opacity:1;transform:scale(1);}
+
+/* Candado */
+.lock-icon{
+  position:absolute;top:-4px;right:-4px;
+  font-size:.8rem;opacity:.6;
+}
+
+.node-year{
+  font-family:'Caveat',cursive;font-size:.95rem;font-weight:700;
+  color:var(--ink);margin-top:.55rem;
+  text-shadow:0 1px 2px rgba(255,255,255,.6);
+}
+.node-wrap.locked .node-year{opacity:.45;}
+.node-wrap.active .node-year{color:var(--rust);}
+
+.node-label{
+  font-family:'IBM Plex Mono',monospace;font-size:.56rem;
+  letter-spacing:.06em;text-transform:uppercase;
+  color:var(--sepia);max-width:80px;text-align:center;
+  line-height:1.3;margin-top:.15rem;
+}
+.node-wrap.locked .node-label{opacity:.3;}
+
+/* Conector entre nodos */
+.connector{
+  width:48px;height:4px;
+  background:linear-gradient(90deg,var(--paper-dark),var(--gold));
+  border-radius:2px;
+  position:relative;z-index:5;
+  flex-shrink:0;
+  margin-top:-24px; /* alinear con el centro del nodo */
+  opacity:.5;
+  transition:opacity .4s, background .4s;
+}
+.connector.passed{
+  background:linear-gradient(90deg,var(--teal),var(--teal-l));
+  opacity:1;
+}
+
+/* ── PANEL DE DETALLE ── */
+.detail-panel{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  background:var(--paper);
+  border-top:3px solid var(--gold);
+  z-index:50;
+  transform:translateY(100%);
+  transition:transform .45s cubic-bezier(.16,1,.3,1);
+  max-height:62%;
+  overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--paper-dark) transparent;
+}
+.detail-panel.open{transform:translateY(0);}
+.detail-panel::before{
+  content:'';position:absolute;left:52px;top:0;bottom:0;width:1.5px;
+  background:rgba(192,57,43,.25);pointer-events:none;
+}
+
+.detail-inner{
+  max-width:860px;margin:0 auto;
+  padding:1.2rem 2.5rem 2rem;
+  position:relative;
+}
+
+/* Drag handle */
+.drag-handle{
+  width:100%;display:flex;justify-content:center;
+  padding:.4rem 0 .2rem;cursor:pointer;
+  position:sticky;top:0;background:var(--paper);z-index:2;
+  border-bottom:1px solid rgba(200,185,138,.3);
+}
+.drag-pill{width:40px;height:4px;background:var(--paper-dark);border-radius:2px;transition:background .2s;}
+.drag-handle:hover .drag-pill{background:var(--sepia);}
+
+.detail-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.25em;text-transform:uppercase;color:var(--rust);margin-bottom:.3rem;display:block;}
+.detail-year{font-family:'Caveat',cursive;font-size:2.8rem;font-weight:700;color:var(--ink);line-height:1;}
+.detail-title{font-family:'Caveat',cursive;font-size:1.5rem;font-weight:700;color:var(--sepia);margin-bottom:.5rem;line-height:1.2;}
+.detail-rule{height:2px;background:linear-gradient(90deg,var(--rust),transparent);max-width:320px;margin-bottom:1rem;border-radius:2px;}
+
+.detail-body{font-size:.88rem;line-height:1.85;color:#2c1f0a;max-width:680px;margin-bottom:.8rem;}
+.detail-body strong{color:var(--sepia);}
+.detail-body em{color:var(--teal);}
+
+/* Cards de impacto */
+.impact-grid{display:flex;flex-wrap:wrap;gap:.7rem;margin:1rem 0;}
+.impact-card{
+  background:#fff9ee;border:1px solid var(--paper-dark);
+  border-left:3px solid var(--gold);
+  padding:.6rem .9rem;border-radius:2px;
+  font-family:'IBM Plex Mono',monospace;font-size:.7rem;line-height:1.45;
+  color:var(--ink);max-width:220px;
+  animation:slideUp .4s ease forwards;
+}
+.impact-card .ic-tag{display:block;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sepia);margin-bottom:.25rem;}
+.impact-card.is-teal{border-left-color:var(--teal);}
+.impact-card.is-rust{border-left-color:var(--rust);}
+.impact-card.is-purple{border-left-color:var(--purple);}
+.impact-card.is-green{border-left-color:var(--green);}
+
+/* Cita histórica */
+.hist-quote{
+  border-left:3px solid var(--rust);
+  padding:.7rem 1.1rem;margin:1rem 0;max-width:620px;
+  background:rgba(192,57,43,.04);border-radius:0 3px 3px 0;
+}
+.hist-quote p{font-style:italic;font-size:.85rem;line-height:1.75;color:#3a1a10;}
+.hist-quote .attr{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);margin-top:.35rem;display:block;opacity:.7;}
+
+/* Etiqueta de era */
+.era-badge{
+  display:inline-block;
+  font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:.25rem .7rem;border-radius:20px;margin-bottom:.8rem;
+  border:1px solid;
+}
+.era-badge.colonial{color:#8b6914;border-color:rgba(139,105,20,.4);background:rgba(139,105,20,.08);}
+.era-badge.fundacional{color:#c0392b;border-color:rgba(192,57,43,.4);background:rgba(192,57,43,.08);}
+.era-badge.reforma{color:#2a7d6f;border-color:rgba(42,125,111,.4);background:rgba(42,125,111,.08);}
+.era-badge.moderno{color:#6b4c9a;border-color:rgba(107,76,154,.4);background:rgba(107,76,154,.08);}
+.era-badge.digital{color:#1a3a5c;border-color:rgba(26,58,92,.4);background:rgba(26,58,92,.08);}
+
+/* Animaciones */
+@keyframes slideUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(212,160,23,.5);}50%{box-shadow:0 0 0 8px rgba(212,160,23,0);}}
+.node-wrap.next-unlock .node{animation:pulse 2s infinite;}
+
+/* ── INSTRUCCIÓN ── */
+.instruction-banner{
+  text-align:center;padding:.5rem 1rem;
+  font-family:'IBM Plex Mono',monospace;font-size:.62rem;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(28,18,8,.4);
+  background:rgba(200,185,138,.2);
+  border-top:1px solid rgba(200,185,138,.4);
+  flex-shrink:0;
+}
+
+/* ── FOOTER ── */
+.footer{
+  background:var(--ink);border-top:3px solid var(--gold);
+  padding:.45rem 1.2rem;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;z-index:20;
+}
+.footer-left{font-family:'Caveat',cursive;font-size:.9rem;color:rgba(245,237,216,.5);}
+.footer-right{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,237,216,.3);}
+.close-detail-btn{
+  font-family:'Caveat',cursive;font-size:1rem;font-weight:700;
+  background:transparent;border:1px solid rgba(212,160,23,.4);
+  color:rgba(245,237,216,.6);padding:.25rem .8rem;border-radius:3px;cursor:pointer;
+  transition:all .2s;display:none;
+}
+.close-detail-btn:hover{border-color:var(--gold);color:var(--gold);}
+.close-detail-btn.show{display:block;}
+
+/* ── INTRO OVERLAY ── */
+.intro-overlay{
+  position:fixed;inset:0;
+  background:var(--ink);
+  z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:2rem;
+  transition:opacity .6s ease;
+}
+.intro-overlay.hide{opacity:0;pointer-events:none;}
+.intro-title{font-family:'Caveat',cursive;font-size:clamp(2rem,5vw,3.5rem);font-weight:700;color:var(--cream);line-height:1.1;margin-bottom:.6rem;}
+.intro-title span{color:var(--gold);}
+.intro-sub{font-family:'Lora',serif;font-style:italic;font-size:1rem;color:rgba(245,237,216,.6);max-width:480px;line-height:1.7;margin-bottom:.5rem;}
+.intro-dates{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.2em;color:var(--gold-l);opacity:.7;margin-bottom:2rem;}
+.intro-deco{font-size:4rem;opacity:.07;margin-bottom:1rem;user-select:none;}
+.intro-btn{
+  font-family:'Caveat',cursive;font-size:1.4rem;font-weight:700;
+  background:var(--gold);color:var(--ink);
+  border:none;padding:.75rem 2.5rem;border-radius:4px;cursor:pointer;
+  box-shadow:4px 4px 0 rgba(212,160,23,.3);
+  transition:all .2s;
+}
+.intro-btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 rgba(212,160,23,.3);}
+
+/* Animación de entrada para el road */
+@keyframes roadAppear{from{opacity:0;transform:scaleX(.95);}to{opacity:1;transform:scaleX(1);}}
+.road-inner{animation:roadAppear .8s .2s ease both;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{height:5px;width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--paper-dark);border-radius:3px;}
+
+/* ── Tooltip de próximo ── */
+.next-tip{
+  position:absolute;bottom:110%;left:50%;transform:translateX(-50%);
+  font-family:'Caveat',cursive;font-size:.85rem;font-weight:700;
+  background:var(--ink);color:var(--gold-l);
+  padding:.3rem .7rem;border-radius:3px;white-space:nowrap;
+  pointer-events:none;opacity:0;transition:opacity .2s;
+  box-shadow:0 4px 12px rgba(0,0,0,.3);
+}
+.next-tip::after{
+  content:'▼';position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);
+  font-size:.55rem;color:var(--ink);
+}
+.node-wrap.next-unlock:hover .next-tip{opacity:1;}
+
+@media(max-width:640px){
+  .detail-inner{padding:1rem 1.2rem 1.5rem;}
+  .detail-year{font-size:2rem;}
+  .impact-grid{flex-direction:column;}
+  .impact-card{max-width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- INTRO OVERLAY -->
+<div class="intro-overlay" id="introOverlay">
+  <div class="intro-deco">⚖️</div>
+  <div class="intro-title">El Camino del <span>Comercio</span></div>
+  <div class="intro-sub">Un viaje por la historia del derecho comercial argentino, desde las Ordenanzas de Bilbao hasta el Código Civil y Comercial de 2015.</div>
+  <div class="intro-dates">1737 — 2015 · y el futuro digital</div>
+  <button class="intro-btn" id="startBtn">🗺️ Iniciar el recorrido</button>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="brand">📜 Código de <span>Comercio</span> · Historia</div>
+  <div class="era-indicator">Era: <span class="era-name" id="eraName">—</span></div>
+  <div class="discovered-badge">✓ <span id="discoveredCount">0</span> / <span id="totalCount">0</span> hitos</div>
+</header>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <div class="track-panel">
+
+    <!-- CAMINO SCROLLEABLE -->
+    <div class="road-scroll" id="roadScroll">
+      <div class="road-inner" id="roadInner">
+        <!-- La ruta y los nodos se generan por JS -->
+        <div class="road-path"></div>
+      </div>
+    </div>
+
+    <!-- PANEL DE DETALLE (sube desde abajo) -->
+    <div class="detail-panel" id="detailPanel">
+      <div class="drag-handle" id="dragHandle"><div class="drag-pill"></div></div>
+      <div class="detail-inner" id="detailInner">
+        <!-- contenido dinámico -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- INSTRUCCIÓN -->
+<div class="instruction-banner" id="instructionBanner">
+  ↔ deslizá para explorar el camino · tocá un hito para descubrirlo
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-left" id="footerLeft">Derecho Comercial Argentino</div>
+  <button class="close-detail-btn" id="closeDetail">✕ cerrar</button>
+  <div class="footer-right">Tras las Huellas del Comercio</div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════
+   DATOS DE LA LÍNEA DE TIEMPO
+═══════════════════════════════════════ */
+const HITOS = [
+  {
+    id: 0,
+    year: '1737',
+    icon: '⚓',
+    label: 'Ordenanzas de Bilbao',
+    era: 'Colonial',
+    eraClass: 'colonial',
+    title: 'Las Ordenanzas de Bilbao',
+    eyebrow: 'Época colonial · Derecho español',
+    body: `El comercio rioplatense se regía por las <strong>Ordenanzas de Bilbao</strong>, un cuerpo normativo español de 1737 que regulaba las relaciones mercantiles de todo el Imperio. Junto a ellas convivían el <strong>Código de Comercio español de 1829</strong> y diversas normas coloniales dispersas.`,
+    extra: `Esta dispersión normativa generaba inseguridad jurídica y dificultades para el comercio en una región en plena expansión. Los comerciantes operaban sin un marco unificado, apelando a la costumbre y a la autoridad de los consulados de comercio.`,
+    quote: { text: 'El comercio no puede prosperar sin leyes ciertas que lo amparen y den certeza a los que en él se aventuran.', attr: 'Espíritu de las Ordenanzas de Bilbao, 1737' },
+    impacts: [
+      { tag: 'Fuente', text: 'Derecho consuetudinario hispano-colonial', color: '' },
+      { tag: 'Alcance', text: 'Todo el territorio del Virreinato del Río de la Plata', color: 'is-teal' },
+      { tag: 'Limitación', text: 'Sin adaptación a la realidad americana', color: 'is-rust' },
+    ],
+    locked: false,
+  },
+  {
+    id: 1,
+    year: '1856',
+    icon: '✍️',
+    label: 'Encargo a Vélez y Acevedo',
+    era: 'Fundacional',
+    eraClass: 'fundacional',
+    title: 'El Encargo Fundacional',
+    eyebrow: 'Provincia de Buenos Aires · 1856',
+    body: `El gobernador bonaerense <strong>Valentín Alsina</strong> encargó a dos juristas destacados —el argentino <em>Dalmacio Vélez Sarsfield</em> y el uruguayo <em>Eduardo Acevedo</em>— la redacción de un código mercantil moderno. La necesidad era urgente: Argentina organizaba sus instituciones tras la Constitución de 1853.`,
+    extra: `La misión era ambiciosa: crear desde cero un cuerpo legal que ordenara el creciente comercio, atrajera inversores extranjeros y consolidara la identidad jurídica de una nación en construcción. Como aún no existía un Código Civil, los redactores debieron incluir numerosas disposiciones de derecho civil dentro del texto comercial.`,
+    quote: { text: 'Una nación sin código de comercio es como un mercader sin libro de cuentas: opera a ciegas.', attr: 'Parafraseo del espíritu de la comisión redactora, 1856' },
+    impacts: [
+      { tag: 'Redactores', text: 'Vélez Sarsfield (AR) y Eduardo Acevedo (UY)', color: '' },
+      { tag: 'Contexto', text: 'Buenos Aires separada de la Confederación Argentina', color: 'is-rust' },
+      { tag: 'Modelo', text: 'Códigos francés, español y brasileño como referencia', color: 'is-teal' },
+    ],
+    locked: false,
+  },
+  {
+    id: 2,
+    year: '1859',
+    icon: '📜',
+    label: 'Código Provincial',
+    era: 'Fundacional',
+    eraClass: 'fundacional',
+    title: 'Sanción del Código de Comercio',
+    eyebrow: 'Legislatura de Buenos Aires · 1859',
+    body: `El trabajo fue presentado en <strong>octubre de 1859</strong> y sancionado ese mismo año por la Legislatura bonaerense. Buenos Aires era todavía una provincia separada de la Confederación. El Código se organizó en <strong>cuatro libros</strong> que cubrían todo el espectro mercantil.`,
+    extra: `Los cuatro libros abarcaban: <strong>Comercio en General</strong> (actos y obligaciones del comerciante), <strong>Contratos Comerciales</strong> (compraventa, seguros, letras de cambio), <strong>Navegación</strong> (derecho marítimo) y <strong>Quiebras</strong> (insolvencia y cesación de pagos). Una estructura que marcaría el derecho regional por décadas.`,
+    impacts: [
+      { tag: 'Libro I', text: 'Del Comercio en General · actos y comerciantes', color: '' },
+      { tag: 'Libro II', text: 'Contratos · compraventa, seguros, letras de cambio', color: 'is-teal' },
+      { tag: 'Libro III', text: 'Navegación · derecho marítimo y fluvial', color: 'is-purple' },
+      { tag: 'Libro IV', text: 'Quiebras · insolvencia y concursos', color: 'is-rust' },
+    ],
+    locked: false,
+  },
+  {
+    id: 3,
+    year: '1862',
+    icon: '🇦🇷',
+    label: 'Código Nacional',
+    era: 'Fundacional',
+    eraClass: 'fundacional',
+    title: 'Código de Comercio Nacional',
+    eyebrow: 'Ley N.° 15 · Congreso Nacional',
+    body: `Al unificarse el país, el <strong>Congreso Nacional sancionó la Ley N.° 15</strong> el 12 de septiembre de 1862, declarando el Código de Buenos Aires como <em>"Código de Comercio Nacional"</em> y extendiendo su vigencia a todo el territorio de la República Argentina.`,
+    extra: `Un dato notable: el Código tuvo tanta solidez conceptual que fue adoptado también, con escasas modificaciones, por <strong>Paraguay y Uruguay</strong>, consolidando su influencia regional en la cuenca del Río de la Plata. La Argentina, recién unificada, tenía ya un marco jurídico mercantil a la altura de las naciones modernas.`,
+    quote: { text: 'Queda declarado Código de Comercio de la Nación el sancionado por la Legislatura de Buenos Aires en 1859.', attr: 'Ley N.° 15, Congreso de la Nación Argentina, 1862' },
+    impacts: [
+      { tag: 'Alcance', text: 'Todo el territorio argentino por primera vez', color: '' },
+      { tag: 'Influencia', text: 'Adoptado también por Paraguay y Uruguay', color: 'is-teal' },
+      { tag: 'Vigencia', text: 'Regiría las relaciones comerciales por más de 150 años', color: 'is-green' },
+    ],
+    locked: false,
+  },
+  {
+    id: 4,
+    year: '1890',
+    icon: '🔧',
+    label: 'Gran Reforma',
+    era: 'Reforma',
+    eraClass: 'reforma',
+    title: 'La Primera Gran Reforma',
+    eyebrow: 'Ley N.° 2.637 · vigente desde 1.° de mayo de 1890',
+    body: `La primera gran reforma respondió a dos necesidades urgentes: el <strong>dinamismo del comercio</strong> que exigía actualización permanente y la <strong>armonización con el Código Civil</strong> sancionado en 1871. Fue una renovación profunda del texto original.`,
+    extra: `Entre los cambios más significativos: el <strong>reconocimiento de los usos y costumbres</strong> como fuente de derecho comercial, la supresión del requisito de inscripción en la matrícula para ser comerciante, y modificaciones sustanciales en materia de sociedades, corredores, bolsas, cheques y quiebras. A partir de aquí, el <em>fiado</em> y otras prácticas consuetudinarias tendrían respaldo jurídico expreso.`,
+    quote: { text: 'Los usos y costumbres mercantiles pueden servir de regla para determinar el sentido de las palabras o frases técnicas del comercio.', attr: 'Código de Comercio reformado, 1890' },
+    impacts: [
+      { tag: 'Innovación', text: 'Usos y costumbres reconocidos como fuente de derecho', color: 'is-teal' },
+      { tag: 'Simplificación', text: 'Se elimina la matrícula obligatoria del comerciante', color: '' },
+      { tag: 'Armonía', text: 'Coordinado con el Código Civil de 1871', color: 'is-green' },
+    ],
+    locked: false,
+  },
+  {
+    id: 5,
+    year: '1963',
+    icon: '📋',
+    label: 'Letras de Cambio',
+    era: 'Siglo XX',
+    eraClass: 'reforma',
+    title: 'Decreto-Ley 5965/63 · Letras y Pagarés',
+    eyebrow: 'Decreto-Ley · 1963',
+    body: `El <strong>Decreto-Ley 5965/63</strong> introdujo un nuevo régimen integral sobre <em>letras de cambio y pagarés</em>, modernizando los instrumentos de crédito mercantil. Era la respuesta a décadas de transformación en las prácticas financieras del comercio argentino.`,
+    extra: `Este instrumento legal consolidó las reglas sobre la creación, circulación y cobro de títulos de crédito. En un país donde el <strong>cheque posdatado</strong> y el pagaré eran moneda corriente del comercio informal entre pymes y comerciantes, la actualización era esencial para dar seguridad jurídica a millones de transacciones cotidianas.`,
+    impacts: [
+      { tag: 'Objeto', text: 'Letras de cambio, pagarés y títulos de crédito', color: '' },
+      { tag: 'Contexto', text: 'Expansión del crédito comercial en Argentina', color: 'is-teal' },
+      { tag: 'Impacto', text: 'Base legal del cheque posdatado informal', color: 'is-rust' },
+    ],
+    locked: false,
+  },
+  {
+    id: 6,
+    year: '1967',
+    icon: '🛡️',
+    label: 'Ley de Seguros',
+    era: 'Siglo XX',
+    eraClass: 'reforma',
+    title: 'Ley N.° 17.418 · Régimen de Seguros',
+    eyebrow: 'Ley N.° 17.418 · 1967',
+    body: `La <strong>Ley N.° 17.418</strong> estableció un nuevo régimen integral de seguros, extrayendo esta materia del Código de Comercio y dotándola de un cuerpo normativo autónomo y moderno. Era un reconocimiento de la complejidad que había adquirido el sector asegurador.`,
+    extra: `El derecho de seguros creció en importancia a medida que la economía argentina se industrializaba y los riesgos comerciales se diversificaban. La ley reguló los contratos de seguro en todas sus formas: vida, incendio, responsabilidad civil, marítimo, transporte y otros. Sigue siendo la norma vigente en la materia.`,
+    impacts: [
+      { tag: 'Alcance', text: 'Seguros de vida, incendio, RC, marítimo y transporte', color: '' },
+      { tag: 'Técnica', text: 'Primera ley especial que sale del Código original', color: 'is-purple' },
+      { tag: 'Vigencia', text: 'Continúa vigente hasta la actualidad', color: 'is-green' },
+    ],
+    locked: false,
+  },
+  {
+    id: 7,
+    year: '1972',
+    icon: '🏢',
+    label: 'Ley de Sociedades',
+    era: 'Siglo XX',
+    eraClass: 'reforma',
+    title: 'Ley N.° 19.550 · Sociedades Comerciales',
+    eyebrow: 'Ley General de Sociedades · 1972',
+    body: `La <strong>Ley N.° 19.550</strong>, conocida como Ley General de Sociedades Comerciales, reguló por primera vez de forma integral las distintas formas societarias: SRL, SA, sociedad en comandita, y otras. Fue un pilar fundamental del derecho empresarial argentino.`,
+    extra: `La ley definió con precisión los derechos y obligaciones de socios, directores y gerentes; estableció requisitos de constitución, funcionamiento y disolución; y organizó la responsabilidad frente a terceros. Reformada múltiples veces, continúa vigente como la norma central del derecho societario argentino, completando el arco normativo separado del Código original.`,
+    impacts: [
+      { tag: 'Formas', text: 'SA, SRL, sociedad en comandita, SAS (posterior)', color: '' },
+      { tag: 'Gobierno', text: 'Directorio, gerencia, asamblea de socios', color: 'is-teal' },
+      { tag: 'Reforma', text: 'Actualizada por Ley 26.994 en 2015 (Ley 19.550 renombrada)', color: 'is-purple' },
+    ],
+    locked: false,
+  },
+  {
+    id: 8,
+    year: '1995',
+    icon: '⚖️',
+    label: 'Ley de Concursos',
+    era: 'Siglo XX',
+    eraClass: 'reforma',
+    title: 'Ley N.° 24.522 · Concursos y Quiebras',
+    eyebrow: 'Ley de Concursos y Quiebras · 1995',
+    body: `La <strong>Ley N.° 24.522</strong> reemplazó la normativa anterior sobre quiebras y estableció el régimen de concursos preventivos y quiebras vigente. Surgió en un contexto de crisis recurrentes en Argentina y buscó equilibrar los derechos de acreedores con la posibilidad de salvataje empresarial.`,
+    extra: `La ley introdujo el <strong>acuerdo preventivo extrajudicial (APE)</strong>, el concurso preventivo y la quiebra liquidatoria. Su aplicación masiva durante la crisis de <em>2001-2002</em> puso a prueba sus mecanismos. Hoy se debate su modernización para adaptarla a las pymes y al nuevo paradigma de "segunda oportunidad" empresarial.`,
+    quote: { text: 'El concurso preventivo tiene por objeto lograr mediante un acuerdo con los acreedores la continuación de la empresa.', attr: 'Art. 2°, Ley 24.522' },
+    impacts: [
+      { tag: 'Mecanismos', text: 'Concurso preventivo, APE, quiebra liquidatoria', color: '' },
+      { tag: 'Crisis', text: 'Aplicada masivamente en la debacle de 2001', color: 'is-rust' },
+      { tag: 'Debate', text: 'Reforma pendiente para simplificar el proceso en pymes', color: 'is-purple' },
+    ],
+    locked: false,
+  },
+  {
+    id: 9,
+    year: '2015',
+    icon: '🏛️',
+    label: 'Código Civil y Comercial',
+    era: 'Unificación',
+    eraClass: 'moderno',
+    title: 'El Código Civil y Comercial de la Nación',
+    eyebrow: 'Ley N.° 26.994 · vigente desde 1.° de agosto de 2015',
+    body: `Tras 150 años, el <strong>Código de Comercio fue absorbido</strong> por el nuevo Código Civil y Comercial de la Nación, redactado por una comisión presidida por el ministro de la Corte Suprema <em>Ricardo Lorenzetti</em>. El nuevo cuerpo legal unificó el derecho privado en <strong>2.671 artículos</strong>.`,
+    extra: `La unificación es un hecho sin precedentes en el derecho argentino: por primera vez, las relaciones civiles y comerciales se rigen por un único código. El nuevo texto incorporó normas modernas sobre <strong>contratos de consumo</strong>, medios electrónicos, cláusulas abusivas, fideicomisos y contratos de empresa. Los usos y costumbres son receptados en el artículo 1°: los casos deben resolverse conforme a la ley, los usos, prácticas y costumbres.`,
+    quote: { text: 'Los casos que este Código rige deben ser resueltos según las leyes que resulten aplicables, conforme con la Constitución Nacional y los tratados de derechos humanos en los que la República sea parte.', attr: 'Art. 1°, Código Civil y Comercial de la Nación, 2015' },
+    impacts: [
+      { tag: 'Magnitud', text: '2.671 artículos · unifica civil y comercial', color: '' },
+      { tag: 'Innovación', text: 'Contratos digitales, consumo, fideicomisos, consorcios', color: 'is-teal' },
+      { tag: 'Tradición', text: 'Usos y costumbres como fuente de derecho en Art. 1°', color: 'is-green' },
+      { tag: 'Redactores', text: 'Comisión: Lorenzetti, Highton de Nolasco, Kemelmajer', color: 'is-purple' },
+    ],
+    locked: false,
+  },
+  {
+    id: 10,
+    year: 'HOY',
+    icon: '💻',
+    label: 'El Desafío Digital',
+    era: 'Digital',
+    eraClass: 'digital',
+    title: 'El Futuro: Derecho Comercial Digital',
+    eyebrow: 'Siglo XXI · Debates pendientes',
+    body: `El vertiginoso avance tecnológico plantea desafíos urgentes que el Código Civil y Comercial de 2015 no pudo anticipar por completo. <strong>Criptomonedas, contratos inteligentes, plataformas digitales y economía de gig</strong> configuran una nueva realidad económica que demanda respuestas jurídicas claras.`,
+    extra: `Argentina es uno de los países con <strong>mayor adopción de criptomonedas del mundo</strong>, impulsada por la inestabilidad cambiaria. El comercio electrónico crece sostenidamente. Los repartidores de plataformas y los trabajadores freelance carecen de un marco legal adecuado. El debate está abierto: ¿cómo honrar la rica tradición consuetudinaria del derecho argentino mientras se construye un marco para la economía digital del siglo XXI?`,
+    impacts: [
+      { tag: 'Pendiente', text: 'Regulación de criptomonedas y smart contracts', color: 'is-rust' },
+      { tag: 'Pendiente', text: 'Marco para trabajadores de plataformas digitales', color: 'is-rust' },
+      { tag: 'Avance', text: 'Firma digital y documento electrónico en expansión', color: 'is-teal' },
+      { tag: 'Debate', text: 'Concurso simplificado para pymes (reforma en discusión)', color: 'is-purple' },
+    ],
+    quote: { text: 'El derecho comercial argentino tiene por delante el desafío de honrar su rica tradición consuetudinaria mientras construye un marco legal a la altura de la economía digital del siglo XXI.', attr: 'Informe de Investigación · Tras las Huellas del Comercio' },
+    locked: false,
+  },
+];
+
+/* ═══════════════════════════════════════
+   ESTADO
+═══════════════════════════════════════ */
+let discovered = new Set();
+let activeId = null;
+
+/* ═══════════════════════════════════════
+   RENDER
+═══════════════════════════════════════ */
+function renderRoad() {
+  const container = document.getElementById('roadInner');
+  // Limpiar excepto road-path
+  const path = container.querySelector('.road-path');
+  container.innerHTML = '';
+  container.appendChild(path);
+
+  document.getElementById('totalCount').textContent = HITOS.length;
+
+  HITOS.forEach((hito, i) => {
+    // Conector antes de cada nodo (excepto el primero)
+    if (i > 0) {
+      const conn = document.createElement('div');
+      conn.className = 'connector' + (discovered.has(i - 1) ? ' passed' : '');
+      conn.id = `conn-${i}`;
+      container.appendChild(conn);
+    }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'node-wrap' + (discovered.has(hito.id) ? ' visited' : '') + (activeId === hito.id ? ' active' : '');
+    if (!hito.locked) wrap.classList.add('unlocked');
+    wrap.id = `node-${hito.id}`;
+
+    wrap.innerHTML = `
+      <div class="next-tip">¡Descubrí este hito!</div>
+      <div class="node">
+        ${hito.icon}
+        <div class="node-check">✓</div>
+        ${hito.locked ? '<div class="lock-icon">🔒</div>' : ''}
+      </div>
+      <div class="node-year">${hito.year}</div>
+      <div class="node-label">${hito.label}</div>
+    `;
+
+    if (!hito.locked) {
+      wrap.addEventListener('click', () => openHito(hito.id));
+    }
+
+    container.appendChild(wrap);
+  });
+}
+
+function openHito(id) {
+  discovered.add(id);
+  activeId = id;
+
+  // Actualizar contadores
+  document.getElementById('discoveredCount').textContent = discovered.size;
+
+  // Actualizar era
+  const hito = HITOS.find(h => h.id === id);
+  document.getElementById('eraName').textContent = hito.era;
+
+  // Construir contenido del panel
+  const panel = document.getElementById('detailPanel');
+  const inner = document.getElementById('detailInner');
+
+  let impactsHTML = hito.impacts.map(imp => `
+    <div class="impact-card ${imp.color}">
+      <span class="ic-tag">${imp.tag}</span>
+      ${imp.text}
+    </div>
+  `).join('');
+
+  let quoteHTML = hito.quote ? `
+    <div class="hist-quote">
+      <p>"${hito.quote.text}"</p>
+      <span class="attr">— ${hito.quote.attr}</span>
+    </div>
+  ` : '';
+
+  inner.innerHTML = `
+    <span class="detail-eyebrow">${hito.eyebrow}</span>
+    <div class="detail-year">${hito.year}</div>
+    <div class="detail-title">${hito.title}</div>
+    <span class="era-badge ${hito.eraClass}">${hito.era}</span>
+    <div class="detail-rule"></div>
+    <div class="detail-body">${hito.body}</div>
+    ${hito.extra ? `<div class="detail-body">${hito.extra}</div>` : ''}
+    ${quoteHTML}
+    <div class="impact-grid">${impactsHTML}</div>
+  `;
+
+  panel.classList.add('open');
+  document.getElementById('closeDetail').classList.add('show');
+  document.getElementById('instructionBanner').style.display = 'none';
+
+  // Actualizar nodos visuales
+  renderRoad();
+
+  // Scroll al nodo activo
+  setTimeout(() => {
+    const nodeEl = document.getElementById(`node-${id}`);
+    if (nodeEl) {
+      nodeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, 100);
+}
+
+function closeDetail() {
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('closeDetail').classList.remove('show');
+  document.getElementById('instructionBanner').style.display = '';
+  activeId = null;
+  renderRoad();
+}
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+document.getElementById('startBtn').addEventListener('click', () => {
+  const overlay = document.getElementById('introOverlay');
+  overlay.classList.add('hide');
+  setTimeout(() => overlay.remove(), 700);
+});
+
+document.getElementById('closeDetail').addEventListener('click', closeDetail);
+document.getElementById('dragHandle').addEventListener('click', closeDetail);
+
+// Swipe-down para cerrar el panel
+let touchStartY = 0;
+document.getElementById('detailPanel').addEventListener('touchstart', e => {
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.getElementById('detailPanel').addEventListener('touchend', e => {
+  const diff = e.changedTouches[0].clientY - touchStartY;
+  if (diff > 60) closeDetail();
+}, { passive: true });
+
+// Initial render
+renderRoad();
+
+// Scroll hint animado en el road
+setTimeout(() => {
+  const rs = document.getElementById('roadScroll');
+  if (rs.scrollWidth > rs.clientWidth) {
+    rs.scrollTo({ left: 80, behavior: 'smooth' });
+    setTimeout(() => rs.scrollTo({ left: 0, behavior: 'smooth' }), 600);
+  }
+}, 1200);
+</script>
+</body>
+</html>

@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Fiado · Experiencia Interactiva</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:#f5edd8; --paper:#ede4cc; --paper-dark:#c8b98a;
+  --ink:#1c1208; --sepia:#8b6914; --rust:#c0392b;
+  --gold:#d4a017; --gold-l:#f0c84a;
+  --teal:#2a7d6f; --teal-l:#4db6a4;
+  --green:#2d6a2d; --green-l:#5ab55a;
+  --bg:#f0e6c8;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{
+  background:var(--bg);
+  font-family:'Lora',serif;
+  color:var(--ink);
+  display:flex;flex-direction:column;height:100vh;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 31px,rgba(180,160,100,0.18) 31px,rgba(180,160,100,0.18) 32px);
+  pointer-events:none;z-index:9999;
+}
+
+/* ── HEADER ── */
+.header{
+  background:var(--ink);padding:.6rem 1.2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;border-bottom:3px solid var(--gold);z-index:20;
+}
+.brand{font-family:'Caveat',cursive;font-size:1.1rem;font-weight:700;color:var(--cream);}
+.brand span{color:var(--gold);}
+.progress-bar-wrap{flex:1;max-width:320px;margin:0 1.5rem;}
+.progress-label{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(245,237,216,.4);margin-bottom:.25rem;}
+.progress-bar-bg{height:5px;background:rgba(245,237,216,.1);border-radius:3px;overflow:hidden;}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--teal-l));border-radius:3px;transition:width .5s ease;}
+.score-badge{font-family:'Caveat',cursive;font-size:1.1rem;font-weight:700;color:var(--gold-l);background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.3);padding:.2rem .8rem;border-radius:3px;white-space:nowrap;}
+
+/* ── SLIDES CONTAINER ── */
+.slides-wrap{flex:1;position:relative;overflow:hidden;}
+.slide{
+  position:absolute;inset:0;
+  opacity:0;transform:translateX(40px);
+  pointer-events:none;
+  transition:opacity .4s ease,transform .4s ease;
+  overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--paper-dark) transparent;
+}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:all;}
+.slide.exit{opacity:0;transform:translateX(-40px);}
+
+/* ── PAPER PAGE ── */
+.page-inner{
+  min-height:100%;
+  background:var(--paper);
+  max-width:860px;margin:0 auto;
+  padding:2rem 2.5rem 5rem;
+  box-shadow:0 0 40px rgba(28,18,8,.15);
+  position:relative;
+}
+.page-inner::before{
+  content:'';position:absolute;left:52px;top:0;bottom:0;width:1.5px;
+  background:rgba(192,57,43,.3);pointer-events:none;
+}
+
+/* ── TYPE ── */
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--rust);margin-bottom:.5rem;display:block;}
+.page-title{font-family:'Caveat',cursive;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:700;line-height:1.1;margin-bottom:.3rem;}
+.rule{height:2px;background:var(--rust);max-width:340px;margin-bottom:1.1rem;border-radius:2px;}
+.body{font-size:.9rem;line-height:1.9;color:#2c1f0a;max-width:680px;margin-bottom:.8rem;}
+.body strong{color:var(--sepia);}
+.body em{color:var(--teal);}
+
+/* ── COVER SPECIFIC ── */
+.cover-wrap{display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 120px);padding:2rem 2.5rem 2rem 3.5rem;max-width:860px;margin:0 auto;background:var(--paper);box-shadow:0 0 40px rgba(28,18,8,.15);}
+.cover-title{font-family:'Caveat',cursive;font-size:clamp(2.2rem,5vw,4rem);font-weight:700;line-height:1.05;margin-bottom:.5rem;}
+.cover-title span{color:var(--rust);}
+.cover-sub{font-family:'Lora',serif;font-style:italic;font-size:1rem;color:var(--sepia);max-width:520px;line-height:1.7;margin-bottom:1.5rem;}
+.start-btn{
+  display:inline-flex;align-items:center;gap:.6rem;
+  font-family:'Caveat',cursive;font-size:1.3rem;font-weight:700;
+  background:var(--ink);color:var(--gold-l);
+  border:none;padding:.7rem 2rem;border-radius:4px;cursor:pointer;
+  transition:all .2s;box-shadow:3px 3px 0 var(--sepia);
+}
+.start-btn:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--sepia);}
+.cover-deco{font-size:6rem;opacity:.08;position:absolute;right:3rem;bottom:2rem;pointer-events:none;user-select:none;}
+
+/* ── REVEAL CARDS (click to flip) ── */
+.reveal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin:1.2rem 0;max-width:720px;}
+.flip-card{height:140px;perspective:800px;cursor:pointer;}
+.flip-inner{
+  width:100%;height:100%;position:relative;
+  transition:transform .5s cubic-bezier(.4,0,.2,1);
+  transform-style:preserve-3d;
+}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+.flip-front,.flip-back{
+  position:absolute;inset:0;
+  border-radius:4px;
+  backface-visibility:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:1rem;text-align:center;
+}
+.flip-front{
+  background:#fff9ee;
+  border:1.5px solid var(--paper-dark);
+  border-top:3px solid var(--gold);
+}
+.flip-front .fi{font-size:2rem;margin-bottom:.4rem;}
+.flip-front .fq{font-family:'Caveat',cursive;font-size:1rem;font-weight:700;color:var(--ink);}
+.flip-front .fhint{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--sepia);opacity:.6;margin-top:.3rem;}
+.flip-back{
+  background:var(--ink);
+  border:1.5px solid var(--gold);
+  transform:rotateY(180deg);
+}
+.flip-back .fa{font-family:'Lora',serif;font-size:.82rem;line-height:1.5;color:var(--cream);}
+.flip-back .fa strong{color:var(--gold-l);}
+
+/* ── QUIZ ── */
+.quiz-box{background:#fff9ee;border:1px solid var(--paper-dark);border-top:3px solid var(--rust);padding:1.3rem 1.4rem;max-width:700px;margin:1rem 0;border-radius:2px;box-shadow:2px 2px 8px rgba(28,18,8,.08);}
+.quiz-q{font-family:'Caveat',cursive;font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:.9rem;line-height:1.4;}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+.quiz-opt{
+  font-family:'IBM Plex Mono',monospace;font-size:.78rem;
+  background:var(--paper);border:1.5px solid var(--paper-dark);
+  color:var(--ink);padding:.65rem .9rem;border-radius:3px;
+  cursor:pointer;transition:all .2s;text-align:left;line-height:1.4;
+}
+.quiz-opt:hover:not(:disabled){border-color:var(--sepia);background:#fff9ee;}
+.quiz-opt.correct{background:#d4edda;border-color:var(--green);color:var(--green);}
+.quiz-opt.wrong{background:#f8d7da;border-color:var(--rust);color:var(--rust);}
+.quiz-opt:disabled{cursor:default;}
+.quiz-feedback{
+  margin-top:.8rem;padding:.7rem 1rem;border-radius:3px;
+  font-family:'Lora',serif;font-size:.85rem;line-height:1.6;
+  display:none;
+}
+.quiz-feedback.show{display:block;}
+.quiz-feedback.ok{background:#d4edda;border-left:3px solid var(--green);color:var(--green);}
+.quiz-feedback.bad{background:#f8d7da;border-left:3px solid var(--rust);color:var(--rust);}
+.quiz-counter{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sepia);margin-bottom:.5rem;}
+
+/* ── SIMULATION ── */
+.sim-wrap{background:#fff9ee;border:1px solid var(--paper-dark);padding:1.2rem 1.4rem;max-width:720px;margin:1rem 0;border-radius:2px;box-shadow:2px 2px 8px rgba(28,18,8,.08);}
+.sim-scene{font-family:'Lora',serif;font-size:.9rem;font-style:italic;color:#3a2808;line-height:1.7;padding:.8rem 1rem;background:rgba(200,185,138,.2);border-radius:3px;margin-bottom:1rem;border-left:3px solid var(--sepia);}
+.sim-scene strong{font-style:normal;color:var(--ink);}
+.sim-choices{display:flex;flex-direction:column;gap:.55rem;}
+.sim-btn{
+  font-family:'Caveat',cursive;font-size:1rem;font-weight:700;
+  background:var(--paper);border:1.5px solid var(--paper-dark);
+  color:var(--ink);padding:.6rem 1rem;border-radius:3px;
+  cursor:pointer;transition:all .2s;text-align:left;
+}
+.sim-btn:hover:not(:disabled){border-color:var(--sepia);background:#fff9ee;transform:translateX(3px);}
+.sim-btn:disabled{cursor:default;opacity:.5;}
+.sim-result{
+  margin-top:.9rem;padding:.8rem 1rem;border-radius:3px;
+  font-family:'Lora',serif;font-size:.85rem;line-height:1.6;
+  display:none;
+}
+.sim-result.show{display:block;}
+.sim-result.good{background:#d4edda;border-left:3px solid var(--green);}
+.sim-result.neutral{background:#fff3cd;border-left:3px solid var(--gold);}
+.sim-result.bad{background:#f8d7da;border-left:3px solid var(--rust);}
+.sim-pts{font-family:'Caveat',cursive;font-size:1.1rem;font-weight:700;margin-top:.4rem;}
+.sim-next{
+  margin-top:.8rem;font-family:'Caveat',cursive;font-size:1rem;font-weight:700;
+  background:var(--ink);color:var(--cream);border:none;
+  padding:.5rem 1.2rem;border-radius:3px;cursor:pointer;
+  display:none;transition:all .2s;
+}
+.sim-next:hover{background:var(--sepia);}
+.sim-next.show{display:inline-block;}
+
+/* ── LIBRETA (drag to reveal) ── */
+.libreta-wrap{position:relative;max-width:340px;margin:1rem 0;}
+.libreta{
+  background:#fef9f0;border:1px solid var(--paper-dark);
+  border-radius:4px;padding:1.2rem 1rem 1rem 1.5rem;
+  box-shadow:3px 4px 12px rgba(28,18,8,.2);
+  position:relative;
+}
+.libreta::before{
+  content:'';position:absolute;left:34px;top:0;bottom:0;width:1px;
+  background:rgba(192,57,43,.3);
+}
+.libreta-title{font-family:'Caveat',cursive;font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:.8rem;border-bottom:1px solid var(--paper-dark);padding-bottom:.4rem;}
+.libreta-row{display:flex;justify-content:space-between;align-items:center;padding:.3rem 0;border-bottom:1px solid rgba(180,160,100,.3);font-family:'Caveat',cursive;font-size:.95rem;gap:.5rem;}
+.libreta-name{color:var(--ink);}
+.libreta-amount{color:var(--rust);font-weight:700;}
+.libreta-paid{color:var(--green);font-weight:700;}
+.libreta-scratch{position:relative;overflow:hidden;cursor:pointer;}
+.scratch-cover{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--sepia),#5a3a0a);
+  border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(245,237,216,.6);
+  transition:opacity .4s;cursor:pointer;user-select:none;
+}
+.scratch-cover.revealed{opacity:0;pointer-events:none;}
+
+/* ── TIMELINE INTERACTIVE ── */
+.timeline-h{display:flex;gap:0;max-width:720px;position:relative;overflow-x:auto;padding-bottom:.5rem;}
+.timeline-h::before{content:'';position:absolute;top:20px;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--sepia),var(--rust),var(--teal));}
+.tl-item{flex:1;min-width:110px;padding-top:44px;padding-right:.5rem;position:relative;cursor:pointer;}
+.tl-dot{
+  position:absolute;top:12px;left:0;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--paper);border:3px solid var(--sepia);
+  transition:all .2s;
+}
+.tl-item:hover .tl-dot,.tl-item.active .tl-dot{background:var(--gold);transform:scale(1.3);box-shadow:0 0 8px rgba(212,160,23,.5);}
+.tl-year{font-family:'Caveat',cursive;font-size:1rem;font-weight:700;color:var(--sepia);}
+.tl-short{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:#7a5a20;line-height:1.4;}
+.tl-detail{
+  display:none;
+  position:absolute;top:70px;left:0;z-index:10;
+  background:#fff9ee;border:1.5px solid var(--gold);border-radius:4px;
+  padding:.9rem 1rem;width:220px;
+  font-family:'Lora',serif;font-size:.8rem;line-height:1.55;color:var(--ink);
+  box-shadow:3px 4px 12px rgba(28,18,8,.15);
+}
+.tl-item.active .tl-detail{display:block;}
+.tl-detail::before{content:'▲';position:absolute;top:-12px;left:6px;color:var(--gold);font-size:.7rem;}
+
+/* ── QUOTE ── */
+.handquote{border-left:3px solid var(--rust);padding:.8rem 1.2rem;margin:1rem 0;max-width:640px;background:rgba(192,57,43,.04);}
+.handquote p{font-style:italic;font-size:.88rem;line-height:1.75;color:#3a1a10;}
+.handquote .attr{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);margin-top:.4rem;display:block;opacity:.7;}
+
+/* ── STICKY ── */
+.sticky{background:#fef3a0;padding:.9rem 1.1rem;max-width:300px;box-shadow:3px 4px 10px rgba(28,18,8,.18);position:relative;font-family:'Caveat',cursive;font-size:.95rem;line-height:1.5;color:#3a2e00;}
+.sticky::before{content:'';position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:28px;height:18px;background:rgba(180,160,80,.6);border-radius:2px;box-shadow:0 2px 4px rgba(0,0,0,.2);}
+
+/* ── SCORE SCREEN ── */
+.score-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 120px);text-align:center;padding:2rem;}
+.score-big{font-family:'Caveat',cursive;font-size:5rem;font-weight:700;line-height:1;color:var(--rust);}
+.score-label{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sepia);margin-bottom:1rem;}
+.score-msg{font-family:'Lora',serif;font-style:italic;font-size:1rem;color:var(--sepia);max-width:440px;line-height:1.7;margin-bottom:1.5rem;}
+.restart-btn{font-family:'Caveat',cursive;font-size:1.2rem;font-weight:700;background:var(--ink);color:var(--gold-l);border:none;padding:.7rem 2rem;border-radius:4px;cursor:pointer;box-shadow:3px 3px 0 var(--sepia);transition:all .2s;}
+.restart-btn:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--sepia);}
+
+/* ── IMG PLACEHOLDER ── */
+.img-ph{border:1.5px dashed var(--paper-dark);background:rgba(200,185,138,.15);border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;text-align:center;padding:1rem;position:relative;min-height:110px;}
+.img-ph .ph-ico{font-size:1.8rem;opacity:.4;}
+.img-ph .ph-name{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--rust);}
+.img-ph .ph-desc{font-family:'Lora',serif;font-size:.72rem;font-style:italic;color:#7a6030;line-height:1.4;max-width:220px;}
+.img-ph .ph-badge{position:absolute;top:6px;right:8px;font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);border:1px solid rgba(42,125,111,.4);background:rgba(42,125,111,.08);padding:2px 6px;border-radius:2px;}
+
+/* ── FOOTER ── */
+.footer{background:var(--ink);border-top:3px solid var(--gold);padding:.5rem 1.2rem;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;z-index:20;}
+.nav-btn{font-family:'Caveat',cursive;font-size:1rem;font-weight:700;background:transparent;border:1px solid rgba(212,160,23,.35);color:rgba(245,237,216,.65);padding:.28rem .9rem;border-radius:3px;cursor:pointer;transition:all .2s;}
+.nav-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold);}
+.nav-btn:disabled{opacity:.18;cursor:default;}
+.dots{display:flex;gap:5px;align-items:center;}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(245,237,216,.15);border:1px solid rgba(212,160,23,.3);cursor:pointer;transition:all .2s;}
+.dot.active{background:var(--gold);transform:scale(1.3);box-shadow:0 0 5px rgba(212,160,23,.5);}
+.slide-num{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:rgba(245,237,216,.35);min-width:44px;text-align:center;}
+.footer-nav{display:flex;align-items:center;gap:.7rem;}
+.footer-hint{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,237,216,.28);}
+
+/* ── UTILITY ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:720px;}
+.col-title{font-family:'Caveat',cursive;font-size:1.05rem;font-weight:700;margin-bottom:.6rem;padding-bottom:.25rem;border-bottom:1.5px solid currentColor;}
+.chip{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .7rem;border:1px solid var(--paper-dark);color:var(--sepia);border-radius:20px;background:rgba(212,160,23,.08);margin:.2rem;}
+
+@keyframes pop{0%{transform:scale(.8);opacity:0;}70%{transform:scale(1.05);}100%{transform:scale(1);opacity:1;}}
+.pop{animation:pop .3s ease forwards;}
+
+@media(max-width:640px){.two-col{grid-template-columns:1fr;}.quiz-opts{grid-template-columns:1fr;}.reveal-grid{grid-template-columns:1fr 1fr;}.footer-hint{display:none;}}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--paper-dark);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="brand">El <span>Fiado</span> · Usos y Costumbres</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-label">Progreso</div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+  <div class="score-badge">⭐ <span id="scoreDisplay">0</span> pts</div>
+</header>
+
+<!-- SLIDES -->
+<div class="slides-wrap">
+
+  <!-- ══ 0: PORTADA ══════════════════════════════════════════════ -->
+  <div class="slide active" id="s0">
+    <div class="cover-wrap">
+      <div class="cover-deco">🤝</div>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--rust);margin-bottom:1rem;display:block;">Usos y Costumbres · Derecho Comercial Argentino</span>
+      <div class="cover-title">"Para mañana<br>te lo pago…"<br><span>El Fiado y el<br>Acuerdo de Palabra</span></div>
+      <p class="cover-sub">Una costumbre centenaria que reguló millones de transacciones sin ninguna ley escrita — y que hoy enfrenta su mayor crisis. Explorá, descubrí y jugá.</p>
+      <div style="margin-bottom:1.2rem;">
+        <span class="chip">📖 6 secciones</span>
+        <span class="chip">🃏 Tarjetas para descubrir</span>
+        <span class="chip">🎮 Simulación</span>
+        <span class="chip">❓ Quiz con puntaje</span>
+      </div>
+      <button class="start-btn" onclick="goTo(1)">Comenzar la experiencia →</button>
+
+      <div style="margin-top:1.5rem;">
+        <div class="img-ph" style="max-width:300px;min-height:90px;">
+          <div class="ph-badge">📷 INSERTAR IMAGEN</div>
+          <span class="ph-ico">🏪</span>
+          <div class="ph-name">Imagen 1 · Portada</div>
+          <div class="ph-desc">Almacén de barrio argentino años '40–'50, blanco y negro, mostrador con libreta de fiados visible.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 1: ¿QUÉ ES? + TARJETAS REVEAL ═══════════════════════════ -->
+  <div class="slide" id="s1">
+    <div class="page-inner">
+      <span class="eyebrow">Sección 1 · Concepto</span>
+      <div class="page-title">¿Qué era el fiado?</div>
+      <div class="rule"></div>
+      <p class="body">El <strong>fiado</strong> era la práctica por la cual un comerciante entregaba mercadería sin cobrar en el momento, basado únicamente en la <em>confianza y la palabra empeñada</em>. Ningún contrato, ninguna firma: solo la reputación.</p>
+      <p class="body">Hacé click en cada tarjeta para descubrir sus elementos clave 👇</p>
+
+      <div class="reveal-grid">
+        <div class="flip-card" onclick="flipCard(this, 10)">
+          <div class="flip-inner">
+            <div class="flip-front"><span class="fi">📖</span><div class="fq">Definición jurídica</div><div class="fhint">Click para revelar</div></div>
+            <div class="flip-back"><div class="fa">Contrato verbal de <strong>venta a crédito</strong>. Válido según el CCyC: art. 1015 — solo son formales los actos que la ley exige por escrito.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="flipCard(this, 10)">
+          <div class="flip-inner">
+            <div class="flip-front"><span class="fi">🤝</span><div class="fq">¿Por qué funcionaba?</div><div class="fhint">Click para revelar</div></div>
+            <div class="flip-back"><div class="fa">La <strong>presión social comunitaria</strong>: en barrios pequeños, no pagar te dejaba sin crédito y sin reputación. El miedo a la exclusión era mejor garantía que un pagaré.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="flipCard(this, 10)">
+          <div class="flip-inner">
+            <div class="flip-front"><span class="fi">📋</span><div class="fq">La libreta de fiados</div><div class="fhint">Click para revelar</div></div>
+            <div class="flip-back"><div class="fa">El único "documento": un cuaderno donde el almacenero anotaba las deudas. Sin valor legal formal, pero con enorme <strong>fuerza probatoria</strong> en la práctica.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="flipCard(this, 10)">
+          <div class="flip-inner">
+            <div class="flip-front"><span class="fi">🧩</span><div class="fq">¿Dónde existía?</div><div class="fhint">Click para revelar</div></div>
+            <div class="flip-back"><div class="fa">Almacenes, verdulerías, carnicerías, kioscos. Más fuerte en <strong>barrios obreros, zonas rurales y pueblos del interior</strong>. En la ciudad grande era más débil.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="flipCard(this, 10)">
+          <div class="flip-inner">
+            <div class="flip-front"><span class="fi">⚖️</span><div class="fq">Elemento jurídico nº1</div><div class="fhint">Click para revelar</div></div>
+            <div class="flip-back"><div class="fa"><strong>Elemento material:</strong> conducta repetida y uniforme entre comerciantes. El fiado se practicaba en todos los almacenes, no era excepción.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="flipCard(this, 10)">
+          <div class="flip-inner">
+            <div class="flip-front"><span class="fi">🧠</span><div class="fq">Elemento jurídico nº2</div><div class="fhint">Click para revelar</div></div>
+            <div class="flip-back"><div class="fa"><strong>Opinio iuris:</strong> todos creían que era obligatorio pagar. Esa convicción colectiva es lo que convierte un hábito en <strong>costumbre jurídica</strong>.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sticky" style="transform:rotate(-1.5deg);margin-top:1rem;">
+        <strong>"Fiar"</strong> viene del latín <em>fidare</em> — confiar. Fiar a alguien era, literalmente, creer en esa persona.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 2: HISTORIA + TIMELINE INTERACTIVO ══════════════════════ -->
+  <div class="slide" id="s2">
+    <div class="page-inner">
+      <span class="eyebrow">Sección 2 · Historia</span>
+      <div class="page-title">500 años de historia<br>en una libreta</div>
+      <div class="rule"></div>
+      <p class="body">El fiado no nació en Argentina. Pero acá tomó una forma única, ligada a la <strong>cultura del inmigrante</strong> que llegó entre 1880 y 1930 y armó su almacén de barrio. Hacé click en cada punto para ver qué pasó 👇</p>
+
+      <div class="timeline-h" id="timeline">
+        <div class="tl-item" onclick="toggleTl(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">Siglo XIV</div>
+          <div class="tl-short">Mercaderes medievales</div>
+          <div class="tl-detail">Las <strong>ferias medievales europeas</strong> funcionaban con crédito verbal entre conocidos. Las Ordenanzas de Bilbao (1737) ya regulaban ventas "al fiado" en el comercio hispano.</div>
+        </div>
+        <div class="tl-item" onclick="toggleTl(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1862</div>
+          <div class="tl-short">Código de Comercio</div>
+          <div class="tl-detail">El Código de Comercio argentino valida los contratos verbales y reconoce los <strong>usos mercantiles</strong> como fuente supletoria. El fiado queda respaldado legalmente de forma implícita.</div>
+        </div>
+        <div class="tl-item" onclick="toggleTl(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1880–1930</div>
+          <div class="tl-short">Auge inmigrante</div>
+          <div class="tl-detail">Italianos, españoles y árabes instalan almacenes de barrio. El fiado era la herramienta de <strong>fidelización</strong> del cliente y de integración en la comunidad del barrio.</div>
+        </div>
+        <div class="tl-item" onclick="toggleTl(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1930–1980</div>
+          <div class="tl-short">Época de oro</div>
+          <div class="tl-detail"><strong>Época dorada</strong> del almacén de barrio. El fiado estaba tan extendido que era considerado absolutamente normal. La libreta de fiados era un objeto cotidiano en cada hogar popular.</div>
+        </div>
+        <div class="tl-item" onclick="toggleTl(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1989</div>
+          <div class="tl-short">Primera gran crisis</div>
+          <div class="tl-detail">La <strong>hiperinflación</strong> destruyó el fiado: lo que fiabas hoy valía la mitad cuando lo cobrabas. Muchos almacenes cerraron o dejaron de fiar definitivamente.</div>
+        </div>
+        <div class="tl-item" onclick="toggleTl(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1990–hoy</div>
+          <div class="tl-short">Declive acelerado</div>
+          <div class="tl-detail">Supermercados, tarjetas de crédito, inflación crónica y pandemia aceleran el fin del fiado tradicional. Pero <strong>muta</strong>: el WhatsApp y las fintech son la nueva libreta.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:1.5rem;">
+        <div class="img-ph" style="max-width:400px;min-height:110px;">
+          <div class="ph-badge">📷 INSERTAR IMAGEN</div>
+          <span class="ph-ico">🛒</span>
+          <div class="ph-name">Imagen 2 · Historia</div>
+          <div class="ph-desc">Interior de almacén de barrio porteño (1940–1960). Mostrador de madera, estanterías con latas, almacenero con delantal. Blanco y negro o sepia.</div>
+        </div>
+      </div>
+
+      <div class="handquote" style="margin-top:1rem;">
+        <p>"El almacén era el banco de los pobres. Don José anotaba en su libreta y sabía perfectamente quién podía y quién no. Nunca le erró. Nadie lo estafaba porque todos sabían que sin crédito en el barrio, estabas solo."</p>
+        <span class="attr">— Testimonio oral, investigación sobre comercio popular argentino</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 3: LIBRETA + MARCO LEGAL ════════════════════════════════ -->
+  <div class="slide" id="s3">
+    <div class="page-inner">
+      <span class="eyebrow">Sección 3 · Marco Legal</span>
+      <div class="page-title">¿Tenía respaldo<br>en el derecho?</div>
+      <div class="rule"></div>
+      <p class="body">Sí. El fiado <em>siempre fue legal</em> en Argentina — el problema no era la validez sino la <strong>prueba</strong>. Descubrí los artículos que lo respaldaban y jugá con la libreta 👇</p>
+
+      <div class="two-col" style="margin-bottom:1rem;">
+        <div>
+          <div class="col-title" style="color:var(--rust);">Las normas que lo respaldaban</div>
+          <div style="display:flex;flex-direction:column;gap:.7rem;">
+            <div style="background:#fff9ee;border:1px solid var(--paper-dark);border-left:3px solid var(--rust);padding:.8rem;font-family:'Lora',serif;font-size:.82rem;line-height:1.55;color:var(--ink);">
+              <strong>Art. 1° CCyC (2015)</strong><br>
+              Los usos y costumbres son vinculantes en situaciones no regladas. El fiado entra aquí.
+            </div>
+            <div style="background:#fff9ee;border:1px solid var(--paper-dark);border-left:3px solid var(--gold);padding:.8rem;font-family:'Lora',serif;font-size:.82rem;line-height:1.55;color:var(--ink);">
+              <strong>Art. 1015 CCyC</strong><br>
+              Solo son formales los actos que la ley exige por escrito. La compraventa de muebles no lo requiere: el contrato verbal es válido.
+            </div>
+            <div style="background:#fff9ee;border:1px solid var(--paper-dark);border-left:3px solid var(--teal);padding:.8rem;font-family:'Lora',serif;font-size:.82rem;line-height:1.55;color:var(--ink);">
+              <strong>Art. 1019 CCyC · Prueba</strong><br>
+              Los contratos pueden probarse por cualquier medio: testigos, libros comerciales, <strong>mensajes de WhatsApp</strong>, correos electrónicos.
+            </div>
+          </div>
+        </div>
+
+        <!-- LIBRETA INTERACTIVA -->
+        <div>
+          <div class="col-title" style="color:var(--sepia);">La Libreta de Don José</div>
+          <p style="font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--sepia);margin-bottom:.7rem;">Hacé click en cada deuda para ver si fue pagada 👇</p>
+          <div class="libreta">
+            <div class="libreta-title">📋 Fiados — Abril 1965</div>
+            <div class="libreta-row libreta-scratch" onclick="revealDebt(this, 'pagado', '$47 ✓ — Pagó el viernes con el sueldo.')">
+              <span class="libreta-name">Familia García</span>
+              <span class="libreta-amount">$47</span>
+              <div class="scratch-cover">👆 Tocar</div>
+            </div>
+            <div class="libreta-row libreta-scratch" onclick="revealDebt(this, 'pagado', '$23 ✓ — Pagó al día siguiente, puntual siempre.')">
+              <span class="libreta-name">Doña Rosa</span>
+              <span class="libreta-amount">$23</span>
+              <div class="scratch-cover">👆 Tocar</div>
+            </div>
+            <div class="libreta-row libreta-scratch" onclick="revealDebt(this, 'impago', '¡No pagó nunca! Se mudó al mes siguiente. Don José: "El único que me estafó en 30 años."')">
+              <span class="libreta-name">El Tano Pérez</span>
+              <span class="libreta-amount">$91</span>
+              <div class="scratch-cover">👆 Tocar</div>
+            </div>
+            <div class="libreta-row libreta-scratch" onclick="revealDebt(this, 'pagado', '$156 ✓ — Pagó en cuotas a lo largo de 3 meses. Don José le siguió fiando.')">
+              <span class="libreta-name">Los Martínez</span>
+              <span class="libreta-amount">$156</span>
+              <div class="scratch-cover">👆 Tocar</div>
+            </div>
+            <div class="libreta-row libreta-scratch" onclick="revealDebt(this, 'pagado', '$38 ✓ — Pagó con un kilo de tomates del huerto. Don José aceptó el trueque.')">
+              <span class="libreta-name">Vecina del 4to</span>
+              <span class="libreta-amount">$38</span>
+              <div class="scratch-cover">👆 Tocar</div>
+            </div>
+          </div>
+          <div id="debtMsg" style="display:none;margin-top:.7rem;padding:.6rem .9rem;border-radius:3px;font-family:'Lora',serif;font-size:.82rem;line-height:1.5;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 4: SIMULACIÓN ════════════════════════════════════════════ -->
+  <div class="slide" id="s4">
+    <div class="page-inner">
+      <span class="eyebrow">Sección 4 · Simulación 🎮</span>
+      <div class="page-title">Sos el almacenero.<br>¿Qué hacés?</div>
+      <div class="rule"></div>
+      <p class="body">Es 1975. Sos dueño del almacén "El Timón" en el barrio de Almagro. Cada decisión que tomés suma o resta puntos. Tus decisiones definen si el almacén sobrevive. 👇</p>
+
+      <div id="simContainer"></div>
+
+      <div style="margin-top:1rem;">
+        <div class="img-ph" style="max-width:360px;min-height:90px;">
+          <div class="ph-badge">📷 INSERTAR IMAGEN</div>
+          <span class="ph-ico">🏪</span>
+          <div class="ph-name">Imagen 3 · Simulación</div>
+          <div class="ph-desc">Almacenero argentino detrás del mostrador, mirando a cámara, con aspecto amable. Ambientación años 70. Puede ser foto actual con estética vintage o fotografía histórica.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 5: QUIZ ══════════════════════════════════════════════════ -->
+  <div class="slide" id="s5">
+    <div class="page-inner">
+      <span class="eyebrow">Sección 5 · Quiz ❓</span>
+      <div class="page-title">¿Cuánto aprendiste?</div>
+      <div class="rule"></div>
+      <p class="body">Respondé las preguntas para sumar puntos. Cada respuesta correcta suma <strong>20 puntos</strong>. Vas acumulando tu puntaje total con la simulación. ¡Mucha suerte! 👇</p>
+      <div id="quizContainer"></div>
+    </div>
+  </div>
+
+  <!-- ══ 6: CRISIS + CONCLUSIÓN ═══════════════════════════════════ -->
+  <div class="slide" id="s6">
+    <div class="page-inner">
+      <span class="eyebrow">Sección 6 · Hoy y Mañana</span>
+      <div class="page-title">¿El fiado murió<br>o se transformó?</div>
+      <div class="rule"></div>
+
+      <div class="two-col">
+        <div>
+          <div class="col-title" style="color:var(--rust);">Por qué declinó</div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;">
+            <div style="background:#fff9ee;border:1px solid var(--paper-dark);border-left:3px solid var(--rust);padding:.7rem .9rem;font-family:'IBM Plex Mono',monospace;font-size:.75rem;line-height:1.5;color:var(--ink);">
+              📉 <strong>Inflación crónica:</strong> lo fiado perdía valor antes de ser cobrado.
+            </div>
+            <div style="background:#fff9ee;border:1px solid var(--paper-dark);border-left:3px solid var(--rust);padding:.7rem .9rem;font-family:'IBM Plex Mono',monospace;font-size:.75rem;line-height:1.5;color:var(--ink);">
+              🏬 <strong>Supermercados:</strong> desplazaron al almacén sin dar fiado.
+            </div>
+            <div style="background:#fff9ee;border:1px solid var(--paper-dark);border-left:3px solid var(--rust);padding:.7rem .9rem;font-family:'IBM Plex Mono',monospace;font-size:.75rem;line-height:1.5;color:var(--ink);">
+              💳 <strong>Tarjeta de crédito:</strong> el banco reemplazó al almacenero.
+            </div>
+            <div style="background:#fff9ee;border:1px solid var(--paper-dark);border-left:3px solid var(--rust);padding:.7rem .9rem;font-family:'IBM Plex Mono',monospace;font-size:.75rem;line-height:1.5;color:var(--ink);">
+              📱 <strong>Pandemia y digital:</strong> eliminó el trato cara a cara.
+            </div>
+            <div style="background:#fff9ee;border:1px solid var(--paper-dark);border-left:3px solid var(--rust);padding:.7rem .9rem;font-family:'IBM Plex Mono',monospace;font-size:.75rem;line-height:1.5;color:var(--ink);">
+              🏙️ <strong>Movilidad social:</strong> si el deudor se muda, la presión social desaparece.
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="col-title" style="color:var(--teal);">La nueva forma del fiado</div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;">
+            <div style="background:#e8f5f2;border:1px solid #a8d8d0;border-left:3px solid var(--teal);padding:.7rem .9rem;font-family:'IBM Plex Mono',monospace;font-size:.75rem;line-height:1.5;color:var(--ink);">
+              📱 <strong>WhatsApp:</strong> "anotate que te debo" — el nuevo acuerdo de palabra, con prueba digital incluida.
+            </div>
+            <div style="background:#e8f5f2;border:1px solid #a8d8d0;border-left:3px solid var(--teal);padding:.7rem .9rem;font-family:'IBM Plex Mono',monospace;font-size:.75rem;line-height:1.5;color:var(--ink);">
+              🏦 <strong>Fintech (Mercado Pago, UALA):</strong> crédito informal digitalizado para pequeños comercios.
+            </div>
+            <div style="background:#e8f5f2;border:1px solid #a8d8d0;border-left:3px solid var(--teal);padding:.7rem .9rem;font-family:'IBM Plex Mono',monospace;font-size:.75rem;line-height:1.5;color:var(--ink);">
+              💳 <strong>Cuotas sin interés:</strong> la versión formalizada del fiado, mediada por el Estado.
+            </div>
+            <div style="background:#e8f5f2;border:1px solid #a8d8d0;border-left:3px solid var(--teal);padding:.7rem .9rem;font-family:'IBM Plex Mono',monospace;font-size:.75rem;line-height:1.5;color:var(--ink);">
+              👥 <strong>Grupos de vecinos:</strong> las redes recrean la comunidad que hacía funcionar el fiado.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="handquote" style="margin-top:1rem;">
+        <p>"El fiado nunca fue solo una práctica comercial: fue una forma de entender el dinero, el tiempo y la comunidad. Cuando desaparece su forma original, algo más se va con él."</p>
+        <span class="attr">— Síntesis de la investigación</span>
+      </div>
+
+      <div style="background:rgba(28,18,8,.06);border:1.5px solid var(--sepia);border-radius:3px;padding:1rem 1.3rem;max-width:680px;margin-top:1rem;position:relative;">
+        <div style="position:absolute;top:-10px;left:14px;background:var(--paper);padding:0 .5rem;font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--sepia);">Conclusión jurídica</div>
+        <p style="font-family:'Lora',serif;font-size:.88rem;line-height:1.7;color:#2c1f0a;">El fiado es un <strong style="color:var(--rust);">uso y costumbre comercial</strong> plenamente reconocido por el CCyC argentino. Su declive no es jurídico sino social y económico: la inflación destruyó la confianza que era su único sostén. Su evolución hacia formas digitales demuestra que la costumbre no muere — <strong style="color:var(--teal);">se adapta</strong>.</p>
+      </div>
+
+      <div style="margin-top:1.2rem;text-align:center;">
+        <button class="start-btn" onclick="goTo(7)">Ver mi puntaje final →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 7: PUNTAJE FINAL ══════════════════════════════════════════ -->
+  <div class="slide" id="s7">
+    <div class="page-inner">
+      <div class="score-screen">
+        <div class="score-label">Tu puntaje final</div>
+        <div class="score-big" id="finalScore">0</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--sepia);margin-bottom:1rem;">puntos</div>
+        <div class="score-msg" id="scoreMsg"></div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.5rem;" id="scoreBadges"></div>
+        <button class="restart-btn" onclick="restart()">↩ Volver a empezar</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /slides-wrap -->
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-hint">← → Teclas · Click en puntos</div>
+  <div class="footer-nav">
+    <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)" disabled>← Ant.</button>
+    <div class="dots" id="dots"></div>
+    <div class="slide-num"><span id="cur">1</span>/<span id="tot"></span></div>
+    <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Sig. →</button>
+  </div>
+  <div class="footer-hint" style="text-align:right;">El Fiado · Usos y Costumbres</div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+let currentSlide = 0;
+let score = 0;
+const TOTAL_SLIDES = 8;
+
+/* ═══════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════ */
+const slides = document.querySelectorAll('.slide');
+document.getElementById('tot').textContent = TOTAL_SLIDES;
+
+// Build dots
+const dotsEl = document.getElementById('dots');
+for(let i=0;i<TOTAL_SLIDES;i++){
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);
+  dotsEl.appendChild(d);
+}
+
+function goTo(n){
+  if(n<0||n>=TOTAL_SLIDES)return;
+  slides[currentSlide].classList.remove('active');
+  currentSlide=n;
+  slides[currentSlide].classList.add('active');
+  document.getElementById('cur').textContent=currentSlide+1;
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===currentSlide));
+  document.getElementById('prevBtn').disabled=currentSlide===0;
+  document.getElementById('nextBtn').disabled=currentSlide===TOTAL_SLIDES-1;
+  updateProgress();
+  if(n===7) showFinalScore();
+}
+function changeSlide(d){goTo(currentSlide+d);}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' ')changeSlide(1);
+  if(e.key==='ArrowLeft')changeSlide(-1);
+});
+
+function updateProgress(){
+  const pct=Math.round((currentSlide/(TOTAL_SLIDES-1))*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+}
+function addScore(pts){
+  score+=pts;
+  document.getElementById('scoreDisplay').textContent=score;
+  const badge=document.getElementById('scoreDisplay');
+  badge.style.transform='scale(1.3)';
+  setTimeout(()=>badge.style.transform='scale(1)',300);
+}
+
+/* ═══════════════════════════════════════════════════
+   FLIP CARDS
+═══════════════════════════════════════════════════ */
+function flipCard(card, pts){
+  if(card.classList.contains('flipped'))return;
+  card.classList.add('flipped');
+  addScore(pts);
+}
+
+/* ═══════════════════════════════════════════════════
+   TIMELINE
+═══════════════════════════════════════════════════ */
+function toggleTl(item){
+  const wasActive=item.classList.contains('active');
+  document.querySelectorAll('.tl-item').forEach(i=>i.classList.remove('active'));
+  if(!wasActive){item.classList.add('active');addScore(5);}
+}
+
+/* ═══════════════════════════════════════════════════
+   LIBRETA SCRATCH
+═══════════════════════════════════════════════════ */
+function revealDebt(row, type, msg){
+  const cover=row.querySelector('.scratch-cover');
+  if(cover.classList.contains('revealed'))return;
+  cover.classList.add('revealed');
+  const msgBox=document.getElementById('debtMsg');
+  msgBox.style.display='block';
+  msgBox.style.background=type==='pagado'?'#d4edda':'#f8d7da';
+  msgBox.style.borderLeft='3px solid '+(type==='pagado'?'#2d6a2d':'#c0392b');
+  msgBox.style.color=type==='pagado'?'#2d6a2d':'#c0392b';
+  msgBox.innerHTML='<strong>'+(type==='pagado'?'✓ Pagado':'✗ Impago')+'</strong> — '+msg;
+  msgBox.classList.add('pop');
+  setTimeout(()=>msgBox.classList.remove('pop'),400);
+  addScore(5);
+}
+
+/* ═══════════════════════════════════════════════════
+   SIMULATION
+═══════════════════════════════════════════════════ */
+const simScenarios=[
+  {
+    scene:'<strong>Lunes por la mañana.</strong> Llega la Sra. Fernández, clienta de hace 10 años. Trae a sus tres hijos. Dice que no tiene plata hoy pero que el martes cobra. Quiere llevarse pan, leche y yerba — básicos de subsistencia.',
+    choices:[
+      {text:'✅ Le fiás sin dudar. Es una clienta de siempre.',pts:20,type:'good',result:'Acertaste. La Sra. Fernández pagó el martes como siempre. <strong>La confianza construida durante años es el activo más valioso del almacén.</strong> +20 pts'},
+      {text:'❌ No le fiás. La inflación está alta y no podés arriesgar.',pts:-10,type:'bad',result:'Error. Perdiste una clienta de 10 años. El boca a boca en el barrio te va a costar más que ese fiado. -10 pts'},
+      {text:'⚖️ Le fiás la mitad. Los básicos sí, el dulce no.',pts:10,type:'neutral',result:'Razonable. La Sra. Fernández lo entendió. No es la respuesta ideal pero es prudente en contexto de inflación. +10 pts'},
+    ]
+  },
+  {
+    scene:'<strong>Jueves a la tarde.</strong> Aparece un vecino nuevo del barrio — llegó hace dos semanas de Córdoba. Te pide $200 de fiado para el fin de semana. No lo conocés. No tiene historial con vos.',
+    choices:[
+      {text:'✅ Le fiás. Hay que darle una oportunidad a todos.',pts:5,type:'neutral',result:'Eso es generoso pero riesgoso. Sin historial ni referentes en el barrio, no tenés mecanismo de presión social. Tuvo suerte: pagó. Pero no siempre será así. +5 pts'},
+      {text:'❌ No le fiás. Sin conocerlo, no hay confianza.',pts:15,type:'good',result:'Correcto. El fiado funciona porque hay presión social comunitaria. Con alguien nuevo sin referencias, ese mecanismo no existe. La prudencia es sabiduría comercial. +15 pts'},
+      {text:'💬 Le pedís una referencia de otro vecino conocido.',pts:20,type:'good',result:'¡Excelente! Así funcionaba el sistema de confianza extendida. Con un aval de alguien conocido, el nuevo vecino entra en la red de reputación del barrio. +20 pts'},
+    ]
+  },
+  {
+    scene:'<strong>Diciembre de 1989.</strong> La inflación está al 3.000% anual. El Tano Rodríguez, clienta fiel, te pide fiar mercadería por $500. Sabés que cuando cobre el mes que viene, esos $500 van a valer la mitad.',
+    choices:[
+      {text:'✅ Le fiás igual. La lealtad está primero.',pts:0,type:'bad',result:'Admirable en lo humano pero insostenible en lo comercial. Fiando a precios de hoy y cobrando a valores de mañana, el almacén quiebra. La inflación es el peor enemigo del fiado. 0 pts'},
+      {text:'💲 Le fiás pero ajustás el precio al momento del pago.',pts:15,type:'good',result:'Inteligente. Así sobrevivieron algunos almacenes: fiaban con cláusula de ajuste. Pero esto ya no era el fiado original — era proto-indexación. +15 pts'},
+      {text:'🚫 No podés fiar más. Le explicás la situación.',pts:20,type:'good',result:'La respuesta más honesta. Con 3.000% de inflación, el fiado es inviable. Explicarlo honestamente mantiene la relación aunque no el crédito. El almacén sobrevive. +20 pts'},
+    ]
+  }
+];
+let simIndex=0;
+
+function buildSim(){
+  const sc=simScenarios[simIndex];
+  const c=document.getElementById('simContainer');
+  c.innerHTML=`
+    <div class="sim-wrap">
+      <div class="quiz-counter">Escenario ${simIndex+1} de ${simScenarios.length}</div>
+      <div class="sim-scene">${sc.scene}</div>
+      <div class="sim-choices">
+        ${sc.choices.map((ch,i)=>`<button class="sim-btn" onclick="simChoose(${i})">${ch.text}</button>`).join('')}
+      </div>
+      <div class="sim-result" id="simResult"></div>
+      <button class="sim-next" id="simNext" onclick="nextSim()">${simIndex<simScenarios.length-1?'Siguiente escenario →':'Ver quiz →'}</button>
+    </div>`;
+}
+
+function simChoose(i){
+  const sc=simScenarios[simIndex];
+  const ch=sc.choices[i];
+  document.querySelectorAll('.sim-btn').forEach(b=>b.disabled=true);
+  const res=document.getElementById('simResult');
+  res.className='sim-result show '+(ch.type==='good'?'good':ch.type==='neutral'?'neutral':'bad');
+  res.innerHTML=ch.result+'<div class="sim-pts">'+(ch.pts>0?'+'+ch.pts:ch.pts)+' pts</div>';
+  res.classList.add('pop');
+  if(ch.pts>0)addScore(ch.pts);
+  document.getElementById('simNext').classList.add('show');
+}
+
+function nextSim(){
+  simIndex++;
+  if(simIndex<simScenarios.length){buildSim();}
+  else{goTo(5);}
+}
+
+/* ═══════════════════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════════════════ */
+const quizData=[
+  {
+    q:'¿Qué artículo del CCyC 2015 reconoce los usos y costumbres como fuente de derecho vinculante?',
+    opts:['Art. 1°','Art. 42','Art. 208','Art. 1015'],
+    correct:0,
+    feedback:{ok:'¡Correcto! El Art. 1° del CCyC establece que los usos y costumbres son vinculantes en situaciones no regladas, siempre que no sean contrarios a derecho.',bad:'Era el Art. 1°. Es el artículo fundacional que reconoce las fuentes del derecho, incluyendo los usos y costumbres mercantiles.'}
+  },
+  {
+    q:'¿Cuál es el "elemento psicológico" que convierte un hábito comercial en costumbre jurídica?',
+    opts:['La repetición uniforme','La opinio iuris — convicción de obligatoriedad','La autorización estatal','La firma ante escribano'],
+    correct:1,
+    feedback:{ok:'¡Exacto! La opinio iuris es la convicción colectiva de que una conducta es jurídicamente obligatoria. Sin ella, es solo un hábito.',bad:'Es la opinio iuris. Sin la convicción de obligatoriedad, tenemos solo un hábito — no una costumbre jurídicamente vinculante.'}
+  },
+  {
+    q:'¿Qué factor histórico fue el principal responsable del declive masivo del fiado en Argentina desde 1989?',
+    opts:['La llegada de internet','La hiperinflación','La prohibición legal','La crisis del 2001'],
+    correct:1,
+    feedback:{ok:'¡Correcto! La hiperinflación de 1989 (3.000% anual) hizo que lo fiado hoy valiera la mitad cuando se cobraba. Eso hizo al fiado directamente inviable.',bad:'Fue la hiperinflación de 1989. Con 3.000% de inflación anual, fiar mercadería era garantizar una pérdida. Muchos almacenes cerraron o dejaron de fiar ese año.'}
+  },
+  {
+    q:'Según el Art. 1019 CCyC, ¿puede un mensaje de WhatsApp reconociendo una deuda servir como prueba de un fiado?',
+    opts:['No, se necesita firma ológrafa','Sí, los contratos pueden probarse por cualquier medio','Solo si está certificado ante notario','No, los contratos verbales no tienen prueba'],
+    correct:1,
+    feedback:{ok:'¡Correcto! El Art. 1019 CCyC admite cualquier medio de prueba para los contratos, incluyendo mensajes digitales. La jurisprudencia argentina los acepta progresivamente.',bad:'Sí puede. El Art. 1019 CCyC es muy amplio: admite cualquier medio de prueba, y la jurisprudencia argentina acepta los mensajes digitales como evidencia de acuerdos.'}
+  },
+  {
+    q:'El fiado y el acuerdo de palabra son, jurídicamente hablando:',
+    opts:['Un delito de estafa sin contrato','Un contrato verbal de venta a crédito, válido por el CCyC','Un acto jurídico nulo por falta de forma','Una donación encubierta'],
+    correct:1,
+    feedback:{ok:'¡Perfecto! Es exactamente eso: un contrato verbal de compraventa con pago diferido. La compraventa de bienes muebles no requiere forma escrita en Argentina.',bad:'Es un contrato verbal de venta a crédito. La compraventa de bienes muebles no exige forma escrita en Argentina, por lo que el fiado es un contrato plenamente válido.'}
+  }
+];
+let quizIndex=0;
+let quizAnswered=[];
+
+function buildQuiz(){
+  const q=quizData[quizIndex];
+  const c=document.getElementById('quizContainer');
+  c.innerHTML=`
+    <div class="quiz-box">
+      <div class="quiz-counter">Pregunta ${quizIndex+1} de ${quizData.length}</div>
+      <div class="quiz-q">${q.q}</div>
+      <div class="quiz-opts">
+        ${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="answerQuiz(${i})">${o}</button>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="qFeedback"></div>
+      ${quizIndex<quizData.length-1
+        ?`<button class="sim-next" id="qNext" onclick="nextQuiz()">Siguiente pregunta →</button>`
+        :`<button class="sim-next" id="qNext" onclick="goTo(6)">Ver conclusiones →</button>`
+      }
+    </div>`;
+}
+
+function answerQuiz(i){
+  if(quizAnswered[quizIndex])return;
+  quizAnswered[quizIndex]=true;
+  const q=quizData[quizIndex];
+  const opts=document.querySelectorAll('.quiz-opt');
+  opts.forEach(b=>b.disabled=true);
+  opts[q.correct].classList.add('correct');
+  const fb=document.getElementById('qFeedback');
+  if(i===q.correct){
+    opts[i].classList.add('correct');
+    fb.className='quiz-feedback show ok';
+    fb.innerHTML='✅ '+q.feedback.ok;
+    addScore(20);
+  } else {
+    opts[i].classList.add('wrong');
+    fb.className='quiz-feedback show bad';
+    fb.innerHTML='❌ '+q.feedback.bad;
+  }
+  fb.classList.add('pop');
+  document.getElementById('qNext').classList.add('show');
+}
+
+function nextQuiz(){
+  quizIndex++;
+  if(quizIndex<quizData.length){buildQuiz();}
+  else{goTo(6);}
+}
+
+/* ═══════════════════════════════════════════════════
+   FINAL SCORE
+═══════════════════════════════════════════════════ */
+function showFinalScore(){
+  document.getElementById('finalScore').textContent=score;
+  let msg,badges;
+  if(score>=200){
+    msg='¡Extraordinario! Conocés el derecho comercial argentino mejor que muchos abogados. El fiado no tiene secretos para vos.';
+    badges='🏆 Experto en Fiado&nbsp;&nbsp;⚖️ Maestro del CCyC&nbsp;&nbsp;🎓 Jurista Comercial';
+  } else if(score>=130){
+    msg='¡Muy bien! Dominás los conceptos fundamentales del fiado y los usos comerciales. Seguí profundizando.';
+    badges='⭐ Buen comerciante&nbsp;&nbsp;📖 Conocedor del CCyC';
+  } else if(score>=70){
+    msg='No está mal, pero hay conceptos para reforzar. Volvé a recorrer la experiencia y vas a mejorar.';
+    badges='📚 Aprendiz en progreso';
+  } else {
+    msg='El fiado te fió algo de conocimiento. Volvé a empezar y prestá atención a los detalles jurídicos.';
+    badges='🌱 Recién comenzando';
+  }
+  document.getElementById('scoreMsg').textContent=msg;
+  document.getElementById('scoreBadges').innerHTML=badges.split('&nbsp;&nbsp;').map(b=>`<span class="chip">${b}</span>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   RESTART
+═══════════════════════════════════════════════════ */
+function restart(){
+  score=0;simIndex=0;quizIndex=0;quizAnswered=[];
+  document.getElementById('scoreDisplay').textContent=0;
+  document.querySelectorAll('.flip-card').forEach(c=>c.classList.remove('flipped'));
+  document.querySelectorAll('.scratch-cover').forEach(c=>c.classList.remove('revealed'));
+  document.getElementById('debtMsg').style.display='none';
+  buildSim();buildQuiz();
+  goTo(0);
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+buildSim();
+buildQuiz();
+updateProgress();
+</script>
+</body>
+</html>

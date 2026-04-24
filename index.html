@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tras las Huellas del Comercio · Ignacio Libutti</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:#f5edd8; --paper:#ede4cc; --paper-dark:#c8b98a;
+  --ink:#1c1208; --sepia:#8b6914; --rust:#c0392b;
+  --gold:#d4a017; --gold-l:#f0c84a;
+  --teal:#2a7d6f; --teal-l:#4db6a4;
+  --green:#2d6a2d;
+  --bg:#f0e6c8;
+  --purple:#6b4c9a;
+  --navy:#1a3a5c;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  font-family:'Lora',serif;
+  color:var(--ink);
+  min-height:100vh;
+  display:flex;flex-direction:column;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 31px,rgba(180,160,100,0.15) 31px,rgba(180,160,100,0.15) 32px);
+  pointer-events:none;z-index:9999;
+}
+
+/* ── HEADER ── */
+.header{
+  background:var(--ink);padding:.65rem 1.4rem;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:3px solid var(--gold);position:sticky;top:0;z-index:100;
+  flex-shrink:0;
+}
+.brand{font-family:'Caveat',cursive;font-size:1.1rem;font-weight:700;color:var(--cream);}
+.brand span{color:var(--gold);}
+.header-chips{display:flex;gap:.5rem;align-items:center;}
+.hchip{
+  font-family:'IBM Plex Mono',monospace;font-size:.55rem;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(245,237,216,.45);border:1px solid rgba(212,160,23,.2);
+  padding:.18rem .55rem;border-radius:2px;
+}
+.hchip.gold{color:var(--gold-l);border-color:rgba(212,160,23,.45);}
+
+/* ── HERO ── */
+.hero{
+  max-width:940px;margin:0 auto;width:100%;
+  padding:2.5rem 2.5rem 0;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:2.5rem;
+  align-items:start;
+}
+.hero-left{}
+.hero-eyebrow{
+  font-family:'IBM Plex Mono',monospace;font-size:.6rem;
+  letter-spacing:.28em;text-transform:uppercase;
+  color:var(--rust);margin-bottom:.9rem;display:block;
+}
+.hero-title{
+  font-family:'Caveat',cursive;
+  font-size:clamp(2.6rem,5.5vw,4rem);
+  font-weight:700;line-height:1.02;margin-bottom:.4rem;
+  color:var(--ink);
+}
+.hero-title .accent{color:var(--rust);}
+.hero-sub{
+  font-family:'Lora',serif;font-style:italic;
+  font-size:.92rem;color:var(--sepia);
+  line-height:1.7;margin-bottom:1.2rem;max-width:420px;
+}
+.hero-rule{height:2px;background:linear-gradient(90deg,var(--rust),var(--gold),transparent);max-width:400px;border-radius:2px;margin-bottom:1.1rem;}
+.chips{display:flex;flex-wrap:wrap;gap:.45rem;}
+.chip{
+  font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.07em;text-transform:uppercase;
+  padding:.2rem .7rem;border:1px solid var(--paper-dark);
+  color:var(--sepia);border-radius:20px;background:rgba(212,160,23,.07);
+}
+.chip.rust{color:var(--rust);border-color:rgba(192,57,43,.32);background:rgba(192,57,43,.05);}
+.chip.teal{color:var(--teal);border-color:rgba(42,125,111,.32);background:rgba(42,125,111,.05);}
+
+/* ── CARÁTULA ── */
+.caratula{
+  width:230px;flex-shrink:0;
+  background:var(--paper);
+  border:1.5px solid var(--paper-dark);
+  border-radius:3px;
+  box-shadow:5px 6px 0 rgba(28,18,8,.12),8px 10px 0 rgba(28,18,8,.05);
+  overflow:hidden;
+  position:relative;
+  transform:rotate(1.2deg);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .35s;
+  cursor:default;
+}
+.caratula:hover{
+  transform:rotate(0deg) translateY(-4px);
+  box-shadow:7px 10px 0 rgba(28,18,8,.14),12px 16px 0 rgba(28,18,8,.05);
+}
+/* Línea roja vertical (margen) */
+.caratula::before{
+  content:'';position:absolute;left:32px;top:0;bottom:0;width:1.5px;
+  background:rgba(192,57,43,.35);pointer-events:none;z-index:1;
+}
+/* Líneas horizontales internas */
+.caratula::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 27px,rgba(180,160,100,0.22) 27px,rgba(180,160,100,0.22) 28px);
+  pointer-events:none;z-index:0;
+}
+.car-top{
+  background:var(--rust);
+  padding:.5rem .9rem .45rem;
+  position:relative;z-index:2;
+}
+.car-top-label{
+  font-family:'IBM Plex Mono',monospace;font-size:.52rem;
+  letter-spacing:.18em;text-transform:uppercase;color:rgba(245,237,216,.75);
+}
+.car-body{
+  padding:1rem .9rem 1rem 1.3rem;
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;gap:.55rem;
+}
+.car-field{}
+.car-label{
+  font-family:'IBM Plex Mono',monospace;font-size:.5rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--sepia);opacity:.65;
+  display:block;margin-bottom:.1rem;
+}
+.car-value{
+  font-family:'Caveat',cursive;font-size:1.05rem;font-weight:700;
+  color:var(--ink);line-height:1.15;
+}
+.car-name{
+  font-family:'Caveat',cursive;font-size:1.55rem;font-weight:700;
+  color:var(--ink);line-height:1.05;
+  border-bottom:1.5px solid var(--paper-dark);
+  padding-bottom:.5rem;margin-bottom:.1rem;
+}
+.car-stamp{
+  margin-top:.6rem;
+  display:flex;justify-content:flex-end;
+}
+.stamp-inner{
+  width:54px;height:54px;border-radius:50%;
+  border:2px solid rgba(192,57,43,.35);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transform:rotate(-8deg);
+  font-family:'IBM Plex Mono',monospace;font-size:.42rem;
+  letter-spacing:.06em;text-transform:uppercase;
+  color:rgba(192,57,43,.5);text-align:center;line-height:1.4;
+  transition:transform .3s, border-color .3s, color .3s;
+}
+.caratula:hover .stamp-inner{
+  transform:rotate(0deg);
+  border-color:rgba(192,57,43,.65);
+  color:rgba(192,57,43,.75);
+}
+
+/* ── MATERIALES ── */
+.materials{
+  max-width:940px;margin:0 auto;width:100%;
+  padding:2rem 2.5rem 2.5rem;
+}
+.sec-label{
+  font-family:'IBM Plex Mono',monospace;font-size:.58rem;
+  letter-spacing:.24em;text-transform:uppercase;
+  color:var(--rust);margin-bottom:.5rem;display:block;
+}
+.sec-title{
+  font-family:'Caveat',cursive;font-size:1.5rem;font-weight:700;
+  color:var(--ink);margin-bottom:1.3rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.sec-title::after{
+  content:'';flex:1;height:1.5px;
+  background:linear-gradient(90deg,var(--paper-dark),transparent);
+  max-width:320px;border-radius:2px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1rem;
+}
+
+/* ── CARD ── */
+.card{
+  background:var(--paper);
+  border:1.5px solid var(--paper-dark);
+  border-radius:3px;
+  overflow:hidden;
+  text-decoration:none;color:inherit;
+  display:flex;flex-direction:column;
+  box-shadow:3px 4px 0 rgba(28,18,8,.08);
+  position:relative;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s;
+}
+.card:not(.pending):hover{
+  transform:translate(-3px,-4px);
+  box-shadow:6px 8px 0 rgba(28,18,8,.13);
+}
+.card-bar{height:4px;flex-shrink:0;}
+.card-bar.rust{background:var(--rust);}
+.card-bar.gold{background:var(--gold);}
+.card-bar.teal{background:var(--teal);}
+.card-bar.navy{background:var(--navy);}
+
+.card-body{padding:1.1rem 1.1rem 1.2rem;flex:1;display:flex;flex-direction:column;}
+.card-icon{font-size:1.8rem;margin-bottom:.6rem;line-height:1;}
+.card-n{
+  font-family:'IBM Plex Mono',monospace;font-size:.52rem;
+  letter-spacing:.16em;text-transform:uppercase;
+  color:var(--sepia);opacity:.55;margin-bottom:.25rem;
+}
+.card-title{
+  font-family:'Caveat',cursive;font-size:1.15rem;font-weight:700;
+  color:var(--ink);margin-bottom:.45rem;line-height:1.2;
+}
+.card-desc{
+  font-family:'Lora',serif;font-size:.78rem;line-height:1.6;
+  color:#3a2808;flex:1;margin-bottom:.9rem;
+}
+.card-cta{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-family:'Caveat',cursive;font-size:.95rem;font-weight:700;
+  color:var(--ink);transition:gap .2s;
+}
+.card:hover .card-cta{gap:.7rem;}
+
+.card.pending{opacity:.68;cursor:default;}
+.pending-tag{
+  position:absolute;top:.6rem;right:.7rem;
+  font-family:'IBM Plex Mono',monospace;font-size:.5rem;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--sepia);border:1px solid rgba(139,105,20,.35);
+  background:rgba(139,105,20,.07);padding:.12rem .45rem;border-radius:2px;
+}
+
+/* ── TEMAS (acordeón) ── */
+.topics{
+  max-width:940px;margin:0 auto;width:100%;
+  padding:0 2.5rem 2.5rem;
+}
+.topic-row{
+  display:flex;align-items:center;gap:.8rem;
+  padding:.6rem .8rem;
+  border-radius:2px;
+  cursor:pointer;
+  border-bottom:1px solid rgba(200,185,138,.35);
+  transition:background .18s;
+  user-select:none;
+}
+.topic-row:hover{background:rgba(200,185,138,.2);}
+.topic-row:first-child{border-top:1px solid rgba(200,185,138,.35);}
+.t-num{
+  font-family:'Caveat',cursive;font-size:1.1rem;font-weight:700;
+  color:var(--rust);min-width:22px;flex-shrink:0;
+}
+.t-title{
+  font-family:'Caveat',cursive;font-size:1.05rem;font-weight:700;
+  color:var(--ink);flex:1;
+}
+.t-chips{display:flex;gap:.35rem;flex-wrap:wrap;flex:1;}
+.t-chip{
+  font-family:'IBM Plex Mono',monospace;font-size:.52rem;
+  letter-spacing:.07em;text-transform:uppercase;
+  padding:.15rem .55rem;border:1px solid var(--paper-dark);
+  color:var(--sepia);border-radius:20px;background:rgba(212,160,23,.07);
+}
+.t-arrow{
+  font-family:'IBM Plex Mono',monospace;font-size:.7rem;
+  color:var(--sepia);opacity:.4;transition:transform .2s, opacity .2s;
+}
+.topic-row.open .t-arrow{transform:rotate(90deg);opacity:.7;}
+.topic-detail{
+  max-height:0;overflow:hidden;
+  transition:max-height .35s ease, padding .3s;
+  font-family:'Lora',serif;font-size:.82rem;line-height:1.7;
+  color:#3a2808;padding:0 .8rem 0 2.6rem;
+  border-bottom:1px solid rgba(200,185,138,.35);
+}
+.topic-detail.open{max-height:120px;padding:.55rem .8rem .7rem 2.6rem;}
+
+/* ── FOOTER ── */
+.footer{
+  background:var(--ink);border-top:3px solid var(--gold);
+  padding:.6rem 1.4rem;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;position:relative;z-index:10;
+  margin-top:auto;
+}
+.footer-name{font-family:'Caveat',cursive;font-size:1rem;font-weight:700;color:var(--gold-l);}
+.footer-right{font-family:'IBM Plex Mono',monospace;font-size:.57rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,237,216,.3);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:820px){
+  .grid{grid-template-columns:repeat(2,1fr);}
+  .hero{grid-template-columns:1fr;gap:1.5rem;}
+  .caratula{width:210px;margin:0 auto;}
+}
+@media(max-width:540px){
+  .grid{grid-template-columns:1fr;}
+  .hero,.materials,.topics{padding-left:1.3rem;padding-right:1.3rem;}
+  .hero-title{font-size:2.4rem;}
+  .footer{flex-direction:column;gap:.25rem;text-align:center;}
+  .header-chips{display:none;}
+}
+
+/* ── ANIMACIONES ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.card{animation:fadeUp .45s ease both;}
+.card:nth-child(1){animation-delay:.06s;}
+.card:nth-child(2){animation-delay:.13s;}
+.card:nth-child(3){animation-delay:.20s;}
+.card:nth-child(4){animation-delay:.27s;}
+@keyframes slideIn{from{opacity:0;transform:rotate(3deg) translateX(20px);}to{opacity:1;transform:rotate(1.2deg);}}
+.caratula{animation:slideIn .6s .1s cubic-bezier(.34,1.56,.64,1) both;}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--paper-dark);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="brand">⚖️ <span>Derecho Económico</span></div>
+  <div class="header-chips">
+    <span class="hchip gold">Ignacio Libutti</span>
+    <span class="hchip">5to año · 2026</span>
+    <span class="hchip">Prof. Miriam Pezuk</span>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <span class="hero-eyebrow">Trabajo Práctico · Investigación y Presentación</span>
+    <h1 class="hero-title">
+      Tras las Huellas<br>del <span class="accent">Comercio</span>
+    </h1>
+    <p class="hero-sub">Explorando los Usos y Costumbres en el Comercio Argentino — del Código de 1862 al desafío digital del siglo XXI.</p>
+    <div class="hero-rule"></div>
+    <div class="chips">
+      <span class="chip rust">📜 1737 → HOY</span>
+      <span class="chip teal">⚖️ CCyC 2015</span>
+      <span class="chip">🤝 Usos y Costumbres</span>
+      <span class="chip">🌎 Arg. vs. España</span>
+      <span class="chip">💻 Reforma digital</span>
+    </div>
+  </div>
+
+  <!-- CARÁTULA DE CUADERNO -->
+  <div class="caratula">
+    <div class="car-top">
+      <div class="car-top-label">Trabajo Práctico · 2026</div>
+    </div>
+    <div class="car-body">
+      <div class="car-field">
+        <span class="car-label">Alumno</span>
+        <div class="car-name">Ignacio<br>Libutti</div>
+      </div>
+      <div class="car-field">
+        <span class="car-label">Materia</span>
+        <div class="car-value">Derecho Económico</div>
+      </div>
+      <div class="car-field">
+        <span class="car-label">Año</span>
+        <div class="car-value">5to año · 2026</div>
+      </div>
+      <div class="car-field">
+        <span class="car-label">Profesora</span>
+        <div class="car-value">Miriam Pezuk</div>
+      </div>
+      <div class="car-stamp">
+        <div class="stamp-inner">TP<br>Entregado<br>2026</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MATERIALES -->
+<section class="materials">
+  <span class="sec-label">Estructura de presentación</span>
+  <h2 class="sec-title">Materiales del trabajo</h2>
+
+  <div class="grid">
+
+    <a class="card" href="informe.pdf" target="_blank" rel="noopener">
+      <div class="card-bar rust"></div>
+      <div class="card-body">
+        <div class="card-icon">📄</div>
+        <div class="card-n">Entregable 1</div>
+        <div class="card-title">Informe Escrito</div>
+        <div class="card-desc">Historia, estructura y propuestas de actualización del Código de Comercio.</div>
+        <div class="card-cta">Abrir PDF <span>→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="linea-tiempo-codigo-comercio.html">
+      <div class="card-bar gold"></div>
+      <div class="card-body">
+        <div class="card-icon">🗺️</div>
+        <div class="card-n">Entregable 2</div>
+        <div class="card-title">Línea de Tiempo</div>
+        <div class="card-desc">11 hitos interactivos desde las Ordenanzas de Bilbao (1737) hasta hoy.</div>
+        <div class="card-cta">Explorar <span>→</span></div>
+      </div>
+    </a>
+
+    <a class="card" href="el-fiado-interactivo.html">
+      <div class="card-bar teal"></div>
+      <div class="card-body">
+        <div class="card-icon">🎮</div>
+        <div class="card-n">Entregable 3</div>
+        <div class="card-title">Presentación Interactiva</div>
+        <div class="card-desc">El fiado y el acuerdo de palabra — tarjetas, simulación y quiz con puntaje.</div>
+        <div class="card-cta">Iniciar <span>→</span></div>
+      </div>
+    </a>
+
+    <div class="card pending">
+      <div class="card-bar navy"></div>
+      <div class="card-body">
+        <div class="pending-tag">Próximamente</div>
+        <div class="card-icon">🎬</div>
+        <div class="card-n">Entregable 4</div>
+        <div class="card-title">Video Comparativo</div>
+        <div class="card-desc">Argentina vs. España — similitudes y diferencias en los códigos comerciales.</div>
+        <div class="card-cta" style="opacity:.4">En edición <span>—</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- TEMAS (acordeón) -->
+<section class="topics">
+  <span class="sec-label">Guía de investigación</span>
+  <h2 class="sec-title">Los 5 temas investigados</h2>
+
+  <div id="accordion">
+    <div class="topic-row" onclick="toggle(0)">
+      <span class="t-num">1</span>
+      <span class="t-title">Historia del Código de Comercio</span>
+      <div class="t-chips">
+        <span class="t-chip">1862</span><span class="t-chip">Reforma 1890</span><span class="t-chip">CCyC 2015</span>
+      </div>
+      <span class="t-arrow">›</span>
+    </div>
+    <div class="topic-detail" id="d0">Origen, evolución y áreas que abarca: contratos, sociedades, navegación y quiebras.</div>
+
+    <div class="topic-row" onclick="toggle(1)">
+      <span class="t-num">2</span>
+      <span class="t-title">Antecedentes Históricos</span>
+      <div class="t-chips">
+        <span class="t-chip">Ordenanzas Bilbao</span><span class="t-chip">Vélez Sarsfield</span>
+      </div>
+      <span class="t-arrow">›</span>
+    </div>
+    <div class="topic-detail" id="d1">Del derecho colonial disperso a la codificación nacional unificada en 1862.</div>
+
+    <div class="topic-row" onclick="toggle(2)">
+      <span class="t-num">3</span>
+      <span class="t-title">Usos y Costumbres Comerciales</span>
+      <div class="t-chips">
+        <span class="t-chip">El Fiado</span><span class="t-chip">Acuerdo de palabra</span>
+      </div>
+      <span class="t-arrow">›</span>
+    </div>
+    <div class="topic-detail" id="d2">El fiado como práctica centenaria que complementó al derecho escrito y hoy se transforma en el mundo digital.</div>
+
+    <div class="topic-row" onclick="toggle(3)">
+      <span class="t-num">4</span>
+      <span class="t-title">Comparación con España</span>
+      <div class="t-chips">
+        <span class="t-chip">Contratos</span><span class="t-chip">Sociedades</span><span class="t-chip">Quiebras</span>
+      </div>
+      <span class="t-arrow">›</span>
+    </div>
+    <div class="topic-detail" id="d3">Similitudes y diferencias entre el régimen argentino y el Código de Comercio español.</div>
+
+    <div class="topic-row" onclick="toggle(4)">
+      <span class="t-num">5</span>
+      <span class="t-title">Propuestas de Actualización</span>
+      <div class="t-chips">
+        <span class="t-chip">E-commerce</span><span class="t-chip">Cripto</span><span class="t-chip">Plataformas</span>
+      </div>
+      <span class="t-arrow">›</span>
+    </div>
+    <div class="topic-detail" id="d4">Reformas necesarias para adaptar el marco legal al comercio electrónico, criptomonedas y economía de plataformas.</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-name">Ignacio Libutti · Derecho Económico 5to año</div>
+  <div class="footer-right">Prof. Miriam Pezuk · 2026</div>
+</footer>
+
+<script>
+function toggle(i) {
+  const row = document.querySelectorAll('.topic-row')[i];
+  const det = document.getElementById('d' + i);
+  const isOpen = row.classList.contains('open');
+  // cerrar todos
+  document.querySelectorAll('.topic-row').forEach(r => r.classList.remove('open'));
+  document.querySelectorAll('.topic-detail').forEach(d => d.classList.remove('open'));
+  // abrir el clickeado si estaba cerrado
+  if (!isOpen) {
+    row.classList.add('open');
+    det.classList.add('open');
+  }
+}
+</script>
+</body>
+</html>
